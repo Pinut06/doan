@@ -1,0 +1,46 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng ký | PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div th:replace="~{fragments :: shopHeader}"></div>
+
+    <main class="container auth-main">
+        <form class="auth-card" th:action="@{/register}" method="post">
+            <h1>Tạo tài khoản</h1>
+
+            <div class="alert alert-err" th:if="${loi}" th:text="${loi}"></div>
+
+            <label>Tên đăng nhập
+                <input type="text" name="tenDangNhap" th:value="${tenDangNhap}" required minlength="3" maxlength="50">
+            </label>
+            <label>Họ và tên
+                <input type="text" name="hoTen" th:value="${hoTen}">
+            </label>
+            <label>Email
+                <input type="email" name="email" th:value="${email}">
+            </label>
+            <label>Mật khẩu (tối thiểu 6 ký tự)
+                <input type="password" name="matKhau" required minlength="6">
+            </label>
+            <label>Nhập lại mật khẩu
+                <input type="password" name="nhapLaiMatKhau" required minlength="6">
+            </label>
+
+            <button type="submit" class="btn full">Đăng ký</button>
+            <p class="auth-switch">Đã có tài khoản? <a th:href="@{/login}">Đăng nhập</a></p>
+
+        </form>
+    </main>
+
+    <div th:replace="~{fragments :: shopFooter}"></div>
+</body>
+
+</html>

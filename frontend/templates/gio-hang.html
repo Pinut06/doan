@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Giỏ hàng | PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments :: shopHeader}"></div>
+    <main class="container page-main">
+        <h1>🛒 Giỏ hàng</h1>
+        <div th:replace="~{fragments :: flash}"></div>
+
+        <p class="empty-note" th:if="${#lists.isEmpty(dongs)}">
+            Giỏ hàng đang trống. <a class="text-link" th:href="@{/}">Tiếp tục mua sắm →</a>
+        </p>
+
+        <div class="cart-layout" th:if="${!#lists.isEmpty(dongs)}">
+            <div class="cart-list">
+                <div class="cart-item" th:each="d : ${dongs}">
+                    <a th:href="@{/san-pham/{id}(id=${d.sanPham.idSanPham})}" class="cart-img">
+                        <img th:if="${d.sanPham.hinhAnh != null and !#strings.isEmpty(d.sanPham.hinhAnh)}"
+                             th:src="@{'/images/' + ${d.sanPham.hinhAnh}}" alt="">
+                    </a>
+                    <div class="cart-info">
+                        <a th:href="@{/san-pham/{id}(id=${d.sanPham.idSanPham})}"><strong th:text="${d.sanPham.tenSanPham}">Tên</strong></a>
+                        <div class="muted" th:text="${#numbers.formatDecimal(d.donGia, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</div>
+                        <span class="tag tag-red" th:if="${d.sanPham.hetHang and !d.sanPham.datTruocDuoc}">Hết hàng</span>
+                        <span class="tag tag-blue" th:if="${d.datTruoc}">Đặt trước<span th:if="${d.sanPham.ngayDuKien != null}"
+                              th:text="' · dự kiến ' + ${#temporals.format(d.sanPham.ngayDuKien, 'dd/MM/yyyy')}"></span></span>
+                    </div>
+                    <form class="qty-form" th:action="@{/gio-hang/cap-nhat}" method="post">
+                        <input type="hidden" name="id" th:value="${d.sanPham.idSanPham}">
+                        <input type="number" name="soLuong" min="0" max="10" th:value="${d.soLuong}">
+                        <button type="submit" class="btn-sm">Cập nhật</button>
+                    </form>
+                    <div class="cart-total" th:text="${#numbers.formatDecimal(d.thanhTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</div>
+                    <form th:action="@{/gio-hang/xoa}" method="post">
+                        <input type="hidden" name="id" th:value="${d.sanPham.idSanPham}">
+                        <button type="submit" class="btn-sm danger" title="Xóa">✕</button>
+                    </form>
+                </div>
+            </div>
+
+            <aside class="summary">
+                <h2>Tóm tắt đơn</h2>
+                <div class="sum-row"><span>Tạm tính</span>
+                    <strong th:text="${#numbers.formatDecimal(tongTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</strong></div>
+                <div class="sum-row"><span>Phí vận chuyển</span><span>Miễn phí</span></div>
+                <div class="sum-row total"><span>Tổng cộng</span>
+                    <strong th:text="${#numbers.formatDecimal(tongTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</strong></div>
+                <p class="muted" th:if="${coDatTruoc}">Sản phẩm đặt trước sẽ được tách thành đơn riêng, giao khi hàng về.</p>
+                <a class="btn full" th:href="@{/thanh-toan}">Tiến hành thanh toán</a>
+                <a class="text-link" th:href="@{/}">← Tiếp tục mua sắm</a>
+            </aside>
+        </div>
+    </main>
+    <div th:replace="~{fragments :: shopFooter}"></div>
+</body>
+</html>

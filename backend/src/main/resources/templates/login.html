@@ -1,0 +1,40 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đăng nhập | PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div th:replace="~{fragments :: shopHeader}"></div>
+
+    <main class="container auth-main">
+        <form class="auth-card" th:action="@{/login}" method="post">
+            <h1>Đăng nhập</h1>
+
+            <div class="alert alert-err" th:if="${param.error}">Sai tên đăng nhập hoặc mật khẩu, hoặc tài khoản đã bị khóa.</div>
+            <div class="alert alert-ok" th:if="${thongBao}" th:text="${thongBao}"></div>
+
+            <label>Tên đăng nhập
+                <input type="text" name="username" required autofocus>
+            </label>
+            <label>Mật khẩu
+                <input type="password" name="password" required>
+            </label>
+
+            <button type="submit" class="btn full">Đăng nhập</button>
+            <p class="auth-switch">Chưa có tài khoản? <a th:href="@{/register}">Đăng ký</a></p>
+            <div class="forgot-link-wrap">
+                <a th:href="@{/quen-mat-khau}">Quên mật khẩu?</a>
+            </div>
+        </form>
+    </main>
+
+    <div th:replace="~{fragments :: shopFooter}"></div>
+</body>
+
+</html>

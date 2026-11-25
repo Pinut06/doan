@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thanh toán và công nợ | PeanutGear</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1>Thanh toán và công nợ</h1><a class="btn-sm" th:href="@{/admin/don-hang}">Đơn hàng</a></div>
+        <form class="inline-row" method="get" th:action="@{/admin/thanh-toan}">
+            <label>Đơn hàng hoặc khách hàng <input type="search" name="q" th:value="${q}"></label>
+            <label>Hiển thị <select name="loc">
+                <option value="no" th:selected="${loc == 'no'}">Còn phải thu</option>
+                <option value="hoan" th:selected="${loc == 'hoan'}">Còn phải hoàn</option>
+                <option value="tat-ca" th:selected="${loc == 'tat-ca'}">Tất cả đơn</option>
+            </select></label><button class="btn-sm">Tra cứu</button>
+        </form>
+        <p>Tổng phải thu trong danh sách <strong th:text="|${#numbers.formatDecimal(phaiThu, 1, 'POINT', 0, 'COMMA')} ₫|"></strong> · Tổng phải hoàn <strong th:text="|${#numbers.formatDecimal(phaiHoan, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Đơn hàng</th><th>Khách hàng</th><th>Giá trị đơn</th><th>Đã thu</th><th>Đã hoàn</th><th>Còn phải thu</th><th>Còn phải hoàn</th><th></th></tr></thead>
+            <tbody><tr th:each="d : ${dons}">
+                <td th:text="${d.maDon}"></td><td th:text="${d.khachHang.hoTen ?: d.khachHang.tenDangNhap}"></td>
+                <td th:text="|${#numbers.formatDecimal(d.tongTien, 1, 'POINT', 0, 'COMMA')} ₫|"></td>
+                <td th:text="|${#numbers.formatDecimal(d.tongThu, 1, 'POINT', 0, 'COMMA')} ₫|"></td>
+                <td th:text="|${#numbers.formatDecimal(d.tongHoan, 1, 'POINT', 0, 'COMMA')} ₫|"></td>
+                <td th:text="|${#numbers.formatDecimal(d.conNo, 1, 'POINT', 0, 'COMMA')} ₫|"></td>
+                <td th:text="|${#numbers.formatDecimal(d.canHoan, 1, 'POINT', 0, 'COMMA')} ₫|"></td>
+                <td><a class="btn-sm" th:href="@{/admin/don-hang/{id}/thanh-toan(id=${d.idDonHang})}">Sổ thanh toán</a></td>
+            </tr><tr th:if="${#lists.isEmpty(dons)}"><td colspan="8">Không có đơn phù hợp.</td></tr></tbody>
+        </table></div>
+    </main>
+</div>
+</body>
+</html>

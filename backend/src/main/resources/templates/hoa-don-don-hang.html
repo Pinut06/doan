@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hóa đơn theo đơn hàng | PeanutGear</title><link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>@media print { .no-print, .admin-side, header, footer, aside { display: none !important } .admin-layout { display: block } .panel { border: 0; box-shadow: none } tr { break-inside: avoid } }</style></head>
+<body th:class="${admin ? 'admin-body' : ''}">
+<th:block th:unless="${admin}"><header th:replace="~{fragments :: shopHeader}"></header></th:block>
+<div th:class="${admin ? 'admin-layout' : ''}">
+    <th:block th:if="${admin}"><aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside></th:block>
+    <main th:class="${admin ? 'admin-main' : 'container page-main'}">
+        <div class="admin-head"><h1 th:text="|Hóa đơn của đơn ${hs.don.maDon}|"></h1>
+            <a class="btn-sm" th:href="${admin} ? @{/admin/don-hang/{id}(id=${hs.don.idDonHang})} : @{/don-hang/{id}(id=${hs.don.idDonHang})}">Chi tiết đơn hàng</a>
+            <a class="btn-sm" th:if="${admin}" th:href="@{/admin/hoa-don}">Tra cứu hóa đơn</a></div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <p th:if="${hs.cacBan.isEmpty()}" class="muted">Chưa có hóa đơn.</p>
+        <form th:if="${admin and hs.don.trangThai.name() == 'HOAN_THANH' and (moi == null or !moi.nhap)}" class="inline-row" method="post"
+              th:action="@{/admin/don-hang/{id}/hoa-don(id=${hs.don.idDonHang})}">
+            <input type="hidden" name="tuBan" th:value="${moi?.id ?: 0}">
+            <button th:if="${moi == null}" class="btn" name="loai" value="BAN_HANG">Lập hóa đơn bán hàng</button>
+            <th:block th:if="${moi != null}"><button class="btn-sm" name="loai" value="DIEU_CHINH">Lập hóa đơn điều chỉnh</button>
+                <button class="btn-sm" name="loai" value="THAY_THE">Lập hóa đơn thay thế</button></th:block>
+        </form>
+        <div class="table-wrap" th:unless="${hs.cacBan.isEmpty()}"><table class="table"><thead><tr><th>Số hóa đơn</th><th>Loại</th><th>Tham chiếu</th><th>Trạng thái</th><th>Ngày lập</th></tr></thead>
+            <tbody><tr th:each="hd : ${hs.cacBan}"><td><a th:href="${admin} ? @{/admin/don-hang/{id}/hoa-don/{ban}(id=${hd.donId},ban=${hd.id})} : @{/don-hang/{id}/hoa-don/{ban}(id=${hd.donId},ban=${hd.id})}" th:text="${hd.soHoaDon ?: 'Mở bản nháp'}"></a></td>
+            <td th:text="${hd.loai.nhan}"></td><td th:text="${hd.soThamChieu ?: '—'}"></td><td th:text="${hd.trangThai}"></td><td th:text="${#temporals.format(hd.ngayLap, 'dd/MM/yyyy HH:mm')}"></td>
+            </tr></tbody></table></div>
+    </main>
+</div>
+<th:block th:unless="${admin}"><footer th:replace="~{fragments :: shopFooter}"></footer></th:block>
+</body></html>

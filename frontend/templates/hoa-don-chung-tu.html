@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hóa đơn điện tử mô phỏng | PeanutGear</title><link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>@media print { .no-print, .admin-side, header, footer, aside { display: none !important } .admin-layout { display: block } .panel { border: 0; box-shadow: none } tr { break-inside: avoid } }</style></head>
+<body th:class="${admin ? 'admin-body' : ''}">
+<th:block th:unless="${admin}"><header th:replace="~{fragments :: shopHeader}"></header></th:block>
+<div th:class="${admin ? 'admin-layout' : ''}">
+    <th:block th:if="${admin}"><aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside></th:block>
+    <main th:class="${admin ? 'admin-main' : 'container page-main'}">
+        <div class="no-print"><div th:replace="~{fragments :: flash}"></div></div>
+        <article class="panel">
+            <p><strong>PeanutGear</strong> · Hóa đơn điện tử mô phỏng dùng cho đồ án</p>
+            <h1 th:text="|Hóa đơn ${#strings.toLowerCase(hd.loai.nhan)}|"></h1>
+            <p><b th:text="${hd.soHoaDon ?: 'Bản nháp chờ phát hành'}"></b> · Đơn <span th:text="${hd.maDon}"></span></p>
+            <p th:if="${hd.ngayPhatHanh != null}">Phát hành <span th:text="${#temporals.format(hd.ngayPhatHanh, 'dd/MM/yyyy HH:mm')}"></span> · <span th:text="${hd.nguoiPhatHanh}"></span></p>
+            <p th:if="${hd.thayBoi != null}" th:text="|Đã được thay thế bởi ${hd.thayBoi}|"></p>
+            <p th:if="${hd.soThamChieu != null}">Tham chiếu <a th:href="${admin} ? @{/admin/don-hang/{id}/hoa-don/{b}(id=${hd.donId},b=${hd.banTruocId})} : @{/don-hang/{id}/hoa-don/{b}(id=${hd.donId},b=${hd.banTruocId})}" th:text="${hd.soThamChieu}"></a> · <span th:text="${hd.lyDo}"></span></p>
+            <p>Người mua <b th:text="${hd.nguoiMua}"></b> <span th:if="${!#strings.isEmpty(hd.mst)}" th:text="| · MST ${hd.mst}|"></span></p>
+            <p>Địa chỉ <span th:text="${hd.diaChi}"></span></p>
+            <table class="table"><thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá</th><th>Thành tiền</th></tr></thead>
+            <tbody><tr th:each="d : ${nd.dongs}"><td th:text="${d.ten}"></td><td th:text="${d.soLuong}"></td>
+                <td th:text="|${#numbers.formatDecimal(d.donGia, 1, 'POINT', 0, 'COMMA')} ₫|"></td><td th:text="|${#numbers.formatDecimal(d.thanhTien, 1, 'POINT', 0, 'COMMA')} ₫|"></td></tr>
+                <tr th:if="${nd.dongs.isEmpty()}"><td colspan="4">Không thay đổi dòng hàng.</td></tr>
+            </tbody></table>
+            <p><span th:text="${hd.loai.name() == 'DIEU_CHINH' ? 'Chênh lệch giảm trừ' : 'Tổng giảm trừ'}"></span> <b th:text="|${#numbers.formatDecimal(nd.giam, 1, 'POINT', 0, 'COMMA')} ₫|"></b></p>
+            <p><span th:text="${hd.loai.name() == 'DIEU_CHINH' ? 'Số tiền điều chỉnh' : 'Tổng tiền hóa đơn'}"></span> <strong th:text="|${#numbers.formatDecimal(nd.phaiTra, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+            <p th:if="${hd.loai.name() == 'DIEU_CHINH'}">Giá trị sau điều chỉnh <b th:text="|${#numbers.formatDecimal(hd.tong, 1, 'POINT', 0, 'COMMA')} ₫|"></b></p>
+        </article>
+        <div class="form-actions no-print">
+            <form th:if="${admin and hd.nhap}" method="post" th:action="@{/admin/don-hang/{id}/hoa-don/{ban}/phat-hanh(id=${hd.donId},ban=${hd.id})}">
+                <input type="hidden" name="lan" th:value="${hd.lanSua}"><button class="btn">Phát hành mô phỏng</button></form>
+            <a th:if="${admin and hd.nhap}" class="btn-sm" th:href="@{/admin/don-hang/{id}/hoa-don/{ban}(id=${hd.donId},ban=${hd.id})}">Sửa bản nháp</a>
+            <a th:unless="${hd.nhap}" class="btn-sm" th:href="${admin} ? @{/admin/don-hang/{id}/hoa-don/{ban}/xml(id=${hd.donId},ban=${hd.id})} : @{/don-hang/{id}/hoa-don/{ban}/xml(id=${hd.donId},ban=${hd.id})}">Tải XML</a>
+            <button type="button" class="btn-sm" onclick="window.print()">In chứng từ</button>
+            <a class="btn-sm" th:href="${admin} ? @{/admin/don-hang/{id}/hoa-don(id=${hd.donId})} : @{/don-hang/{id}/hoa-don(id=${hd.donId})}">Hồ sơ hóa đơn</a>
+        </div>
+    </main>
+</div>
+<th:block th:unless="${admin}"><footer th:replace="~{fragments :: shopFooter}"></footer></th:block>
+</body></html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Thanh toán | PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments :: shopHeader}"></div>
+    <main class="container page-main">
+        <h1>Thanh toán</h1>
+        <div th:replace="~{fragments :: flash}"></div>
+
+        <form class="cart-layout" th:action="@{/thanh-toan}" method="post">
+            <input type="hidden" name="tongDaXem" th:value="${tongTien}">
+            <div class="form-card wide">
+                <h2>Thông tin nhận hàng</h2>
+                <label>Họ tên người nhận *
+                    <input type="text" name="hoTen" th:value="${hoTen}" required maxlength="100">
+                </label>
+                <label>Số điện thoại *
+                    <input type="text" name="soDienThoai" th:value="${soDienThoai}" required placeholder="0906349828">
+                </label>
+                <label>Địa chỉ nhận hàng *
+                    <input type="text" name="diaChi" th:value="${diaChi}" required maxlength="500">
+                </label>
+                <label>Ghi chú
+                    <textarea name="ghiChu" rows="2" maxlength="500" th:text="${ghiChu}"></textarea>
+                </label>
+
+                <h2>Phương thức thanh toán</h2>
+                <label class="check pay" th:each="pt, st : ${phuongThucs}">
+                    <input type="radio" name="phuongThuc" th:value="${pt}"
+                           th:checked="${phuongThucChon != null ? phuongThucChon == pt : st.first}">
+                    <span th:text="${pt.nhan}">COD</span>
+                </label>
+                <p class="muted">Chuyển khoản / thanh toán online: hướng dẫn hiển thị ở trang đơn hàng sau khi đặt.</p>
+            </div>
+
+            <aside class="summary">
+                <h2>Đơn hàng của bạn</h2>
+                <div class="sum-row" th:each="d : ${dongs}">
+                    <span><span th:text="${d.soLuong}">1</span> × <span th:text="${d.sanPham.tenSanPham}">SP</span>
+                        <span class="tag tag-blue" th:if="${d.datTruoc}">Đặt trước</span></span>
+                    <span th:text="${#numbers.formatDecimal(d.thanhTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</span>
+                </div>
+                <div th:replace="~{ma-giam-gia :: nhap}"></div>
+                <div class="sum-row total"><span>Tổng cộng</span>
+                    <strong th:text="${#numbers.formatDecimal(baoGia == null ? tongTien : baoGia.phaiTra, 1, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</strong></div>
+                <p class="muted" th:if="${coDatTruoc}">Hàng đặt trước sẽ tạo đơn riêng và được giao khi có hàng.</p>
+                <button type="submit" class="btn full">Đặt hàng</button>
+                <a class="text-link" th:href="@{/gio-hang}">← Quay lại giỏ hàng</a>
+            </aside>
+        </form>
+    </main>
+    <div th:replace="~{fragments :: shopFooter}"></div>
+</body>
+</html>

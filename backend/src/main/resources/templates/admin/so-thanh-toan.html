@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sổ thanh toán | PeanutGear</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1 th:text="|Thanh toán đơn ${don.maDon}|"></h1>
+            <a class="btn-sm" th:href="@{/admin/don-hang/{id}(id=${don.idDonHang})}">Chi tiết đơn</a>
+            <a class="btn-sm" th:href="@{/admin/thanh-toan}">Công nợ</a></div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <section class="panel"><h2 th:text="${don.khachHang.hoTen ?: don.khachHang.tenDangNhap}"></h2>
+            <p class="sum-row"><span>Giá trị đơn</span><strong th:text="|${#numbers.formatDecimal(don.tongTien, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+            <p class="sum-row" th:if="${don.giamSauBan.signum() > 0}"><span>Giảm sau bán (gồm giá trị hàng trả)</span><strong th:text="|${#numbers.formatDecimal(don.giamSauBan, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+            <p class="sum-row"><span>Đã thu</span><strong th:text="|${#numbers.formatDecimal(don.tongThu, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+            <p class="sum-row"><span>Đã hoàn</span><strong th:text="|${#numbers.formatDecimal(don.tongHoan, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+            <p class="sum-row"><span>Còn phải thu</span><strong th:text="|${#numbers.formatDecimal(don.conNo, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+            <p class="sum-row"><span>Còn phải hoàn</span><strong th:text="|${#numbers.formatDecimal(don.canHoan, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+        </section>
+        <th:block th:each="loai : ${loaiPhieu}" th:with="hoan=${loai.name() == 'HOAN'}">
+            <form class="form-card wide" method="post" th:with="han=${hoan ? don.gioiHanHoan : don.conNo}"
+                  th:if="${hoan ? don.gioiHanHoan.signum() > 0 : don.conNo.signum() > 0}"
+                  th:action="@{/admin/don-hang/{id}/thanh-toan(id=${don.idDonHang})}">
+                <h2 th:text="${hoan ? 'Lập phiếu hoàn tiền' : 'Lập phiếu thu'}"></h2>
+                <input type="hidden" name="yeuCau" th:value="${hoan ? yeuCauHoan : yeuCauThu}">
+                <input type="hidden" name="loai" th:value="${hoan ? 'HOAN' : 'THU'}">
+                <div class="form-grid">
+                    <label>Số tiền (₫) <input name="soTien" type="number" required min="1" step="1" th:max="${han}" th:value="${hoan ? null : han}"></label>
+                    <label>Hình thức <select name="hinhThuc"><option value="TIEN_MAT">Tiền mặt</option>
+                        <option value="CHUYEN_KHOAN" th:selected="${don.phuongThuc.name() == 'CHUYEN_KHOAN'}">Chuyển khoản</option></select></label>
+                    <label><span th:text="${hoan ? 'Người nhận tiền' : 'Người nộp tiền'}"></span>
+                        <input name="nguoiNopNhan" maxlength="255" required th:value="${don.khachHang.hoTen ?: don.khachHang.tenDangNhap}"></label>
+                    <label>Mã tham chiếu ngân hàng (bắt buộc khi chuyển khoản) <input name="thamChieu" maxlength="100"></label>
+                    <label class="span-2"><span th:text="${hoan ? 'Lý do hoàn tiền' : 'Nội dung thu'}"></span>
+                        <input name="noiDung" maxlength="255" th:required="${hoan}"></label>
+                </div>
+                <p class="muted" th:if="${hoan}">Ghi số tiền đã trả cho khách. Mức hoàn tối đa <span th:text="|${#numbers.formatDecimal(han, 1, 'POINT', 0, 'COMMA')} ₫|"></span>.</p>
+                <button class="btn" type="submit" th:text="${hoan ? 'Ghi nhận đã hoàn tiền' : 'Ghi nhận đã thu tiền'}"></button>
+            </form>
+        </th:block>
+        <section class="panel"><h2>Lịch sử thu và hoàn tiền</h2>
+            <div class="table-wrap"><table class="table"><thead><tr><th>Số phiếu</th><th>Ngày lập</th><th>Loại phiếu</th><th>Hình thức</th><th>Số tiền</th><th>Người lập</th></tr></thead>
+            <tbody><tr th:each="p : ${phieus}"><td><a th:href="@{/admin/don-hang/{id}/thanh-toan/{p}(id=${don.idDonHang},p=${p.id})}" th:text="${p.soPhieu}"></a></td>
+                <td th:text="${#temporals.format(p.ngayLap, 'dd/MM/yyyy HH:mm')}"></td><td th:text="${p.loai.name() == 'THU' ? 'Thu' : 'Hoàn'}"></td>
+                <td th:text="${p.hinhThuc.nhan}"></td><td th:text="|${#numbers.formatDecimal(p.soTien, 1, 'POINT', 0, 'COMMA')} ₫|"></td><td th:text="${p.nguoiLap}"></td>
+            </tr><tr th:if="${#lists.isEmpty(phieus)}"><td colspan="6">Chưa có phiếu.</td></tr></tbody></table></div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

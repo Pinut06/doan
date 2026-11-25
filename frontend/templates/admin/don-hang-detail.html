@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết đơn | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+    <div class="admin-layout">
+        <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+        <main class="admin-main">
+            <div class="admin-head">
+                <h1>Đơn <span th:text="${donHang.maDon}">PG</span>
+                    <span class="tag" th:classappend="${donHang.trangThai.mau}" th:text="${donHang.trangThai.nhan}">st</span></h1>
+                <a class="btn-sm" th:href="@{/admin/don-hang}">← Quay lại</a>
+            </div>
+            <div th:replace="~{fragments :: flash}"></div>
+
+            <section class="panel">
+                <h2>Khách hàng</h2>
+                <a class="btn-sm" th:if="${donHang.choSuaGiaoHang}" th:href="@{/admin/don-hang/{id}/edit(id=${donHang.idDonHang})}">Cập nhật đơn hàng</a>
+                <p><b th:text="${donHang.hoTenNhan}">n</b> · <span th:text="${donHang.soDienThoai}">sdt</span>
+                    (tài khoản: <span th:text="${donHang.khachHang.tenDangNhap}">u</span>)</p>
+                <p th:text="${donHang.diaChi}">địa chỉ</p>
+                <p th:if="${donHang.ghiChu != null and !#strings.isEmpty(donHang.ghiChu)}">Ghi chú: <i th:text="${donHang.ghiChu}"></i></p>
+                <p>Ngày đặt: <span th:text="${#temporals.format(donHang.ngayTao, 'dd/MM/yyyy HH:mm')}"></span> ·
+                   <span th:text="${donHang.phuongThuc.nhan}"></span> ·
+                   <span class="tag tag-green" th:if="${donHang.daThanhToan}" th:text="${donHang.nhanThanhToan}"></span>
+                   <span class="tag tag-yellow" th:unless="${donHang.daThanhToan}" th:text="${donHang.nhanThanhToan}"></span></p>
+            </section>
+
+            <section class="panel" style="margin-top:16px">
+                <h2>Sản phẩm</h2>
+                <table class="table">
+                    <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+                    <tbody>
+                        <tr th:each="ct : ${donHang.chiTiets}">
+                            <td th:text="${ct.tenSanPham}">SP</td>
+                            <td th:text="${#numbers.formatDecimal(ct.donGia, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0</td>
+                            <td th:text="${ct.soLuong}">1</td>
+                            <td th:text="${#numbers.formatDecimal(ct.thanhTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div th:replace="~{ma-giam-gia :: chiTiet}"></div>
+                <p class="sum-row total"><span>Tổng cộng</span>
+                    <strong th:text="${#numbers.formatDecimal(donHang.tongTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0</strong></p>
+            </section>
+
+            <section class="panel" style="margin-top:16px">
+                <h2>Xử lý đơn</h2>
+                <a class="btn-sm" th:if="${donHang.trangThai.name() == 'HOAN_THANH'}" th:href="@{/admin/don-hang/{id}/hoa-don(id=${donHang.idDonHang})}">Hóa đơn bán hàng</a>
+                <a class="btn-sm" th:if="${donHang.trangThai.name() == 'HOAN_THANH'}" th:href="@{/admin/don-hang/{id}/doi-tra(id=${donHang.idDonHang})}">Quản lý đổi trả</a>
+                <a class="btn-sm" th:href="@{/admin/don-hang/{id}/giao-hang(id=${donHang.idDonHang})}">Quản lý giao hàng</a>
+                <a class="btn-sm" th:href="@{/admin/don-hang/{id}/thanh-toan(id=${donHang.idDonHang})}">Sổ thanh toán và hoàn tiền</a>
+                <form class="inline-row" th:unless="${#lists.isEmpty(trangThais)}" th:action="@{/admin/don-hang/{id}/trang-thai(id=${donHang.idDonHang})}" method="post">
+                    <select name="trangThai">
+                        <option th:each="t : ${trangThais}" th:value="${t}" th:text="${t.hanhDong}"></option>
+                    </select>
+                    <button type="submit" class="btn">Cập nhật trạng thái</button>
+                </form>
+                <form th:if="${donHang.daThanhToan != true and donHang.trangThai.name() != 'DA_HUY'}" th:action="@{/admin/don-hang/{id}/da-thanh-toan(id=${donHang.idDonHang})}" method="post" style="margin-top:12px">
+                    <button type="submit" class="btn-sm">✔ Xác nhận đã nhận thanh toán</button>
+                </form>
+                <p class="muted" th:if="${donHang.datTruoc == true and donHang.trangThai.name() == 'DA_XAC_NHAN'}">Khi duyệt đơn đặt trước, hệ thống sẽ kiểm tra và giữ đủ hàng trong kho.</p>
+                <p class="muted" th:if="${donHang.canHoanTien}">Đơn đã thu tiền. Cần đối chiếu và xử lý hoàn tiền cho khách.</p>
+            </section>
+        </main>
+    </div>
+</body>
+</html>

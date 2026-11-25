@@ -1,0 +1,21 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<body>
+<div th:fragment="nhap">
+    <input type="hidden" name="doiChieu" th:value="${baoGia?.doiChieu}">
+    <label>Mã giảm giá <input type="text" name="ma" maxlength="32" th:value="${ma}" placeholder="Nhập mã nếu có"></label>
+    <button type="submit" class="btn-sm" name="xemMa" value="true" formnovalidate>Áp dụng mã</button>
+    <div th:if="${baoGia != null and !baoGia.doiChieu.isEmpty()}" class="giam-theo-ma">
+        <p class="sum-row" th:if="${baoGia.thuong != null}"><span>Giảm cho hàng có sẵn</span>
+            <strong th:text="|−${#numbers.formatDecimal(baoGia.thuong.tienGiam, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+        <p class="sum-row" th:if="${baoGia.datTruoc != null}"><span>Giảm cho hàng đặt trước</span>
+            <strong th:text="|−${#numbers.formatDecimal(baoGia.datTruoc.tienGiam, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+        <small class="muted">Để bỏ mã, xóa mã rồi chọn Áp dụng mã.</small>
+    </div>
+</div>
+<p th:fragment="chiTiet" th:if="${donHang.uuDai != null}" class="sum-row">
+    <span th:text="|Mã giảm giá ${donHang.uuDai.ma}|"></span>
+    <strong th:text="|−${#numbers.formatDecimal(donHang.uuDai.tienGiam, 1, 'POINT', 0, 'COMMA')} ₫|"></strong>
+</p>
+</body>
+</html>

@@ -1,0 +1,104 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sản phẩm | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="admin-body">
+    <div class="admin-layout">
+        <aside th:replace="~{fragments :: adminSidebar('san-pham')}"></aside>
+
+        <main class="admin-main">
+            <div class="admin-head">
+                <h1 th:text="${sanPham.idSanPham == null} ? 'Thêm sản phẩm' : 'Sửa sản phẩm'">Sản phẩm</h1>
+                <a class="btn-sm" th:href="@{/admin/san-pham}">← Quay lại</a>
+            </div>
+
+            <div class="alert alert-err" th:if="${loiAnh}" th:text="${loiAnh}"></div>
+
+            <form class="form-card" th:action="@{/admin/san-pham/save}" th:object="${sanPham}"
+                  method="post" enctype="multipart/form-data">
+                <input type="hidden" th:field="*{idSanPham}">
+                <input type="hidden" th:field="*{phienBan}">
+
+                <div class="form-grid">
+                    <label class="span-2">Tên sản phẩm *
+                        <input type="text" th:field="*{tenSanPham}">
+                        <small class="err" th:if="${#fields.hasErrors('tenSanPham')}" th:errors="*{tenSanPham}"></small>
+                    </label>
+
+                    <label>Mã sản phẩm
+                        <input type="text" th:field="*{maSanPham}">
+                    </label>
+                    <label>Thương hiệu
+                        <input type="text" th:field="*{thuongHieu}">
+                    </label>
+
+                    <label>Danh mục
+                        <select name="danhMucId">
+                            <option value="">-- Chọn danh mục --</option>
+                            <option th:each="dm : ${danhMucs}" th:value="${dm.idDanhMuc}" th:text="${dm.tenDanhMuc}"
+                                    th:selected="${sanPham.danhMuc != null and sanPham.danhMuc.idDanhMuc == dm.idDanhMuc}">
+                            </option>
+                        </select>
+                    </label>
+                    <label>Giá bán (₫) *
+                        <input type="number" min="0" step="1" th:field="*{giaCoBan}">
+                        <small class="err" th:if="${#fields.hasErrors('giaCoBan')}" th:errors="*{giaCoBan}"></small>
+                    </label>
+
+                    <label>Giá vốn mỗi sản phẩm (₫)
+                        <input type="number" min="0" step="1" th:field="*{giaVon}" placeholder="Để trống nếu chưa biết">
+                        <small class="err" th:errors="*{giaVon}"></small>
+                    </label>
+                    <label>Số lượng tồn *
+                        <input type="number" min="0" th:field="*{soLuongTon}">
+                        <small class="err" th:if="${#fields.hasErrors('soLuongTon')}" th:errors="*{soLuongTon}"></small>
+                    </label>
+                    <label>Bảo hành (tháng)
+                        <input type="number" min="0" th:field="*{baoHanhThang}">
+                    </label>
+
+                    <label class="span-2">Mô tả
+                        <textarea rows="8" th:field="*{moTa}"></textarea>
+                        <small class="hint">Mỗi dòng một ý. Dòng dạng <b>Tên thông số: giá trị</b> sẽ hiện trong bảng
+                            "Thông số kỹ thuật", các dòng còn lại hiện thành gạch đầu dòng "Điểm nổi bật".</small>
+                    </label>
+
+                    <label class="check span-2"><input type="checkbox" th:field="*{datTruoc}">
+                        Cho phép đặt trước khi hết hàng (Preorder)</label>
+                    <label>Ngày dự kiến có hàng
+                        <input type="date" th:field="*{ngayDuKien}">
+                    </label>
+                    <span></span>
+
+                    <label class="span-2">Ảnh sản phẩm (.jpg, .png, .webp — tối đa 5MB)
+                        <input type="file" name="anh" accept="image/*">
+                        <span class="current-img" th:if="${sanPham.hinhAnh != null and !#strings.isEmpty(sanPham.hinhAnh)}">
+                            Ảnh hiện tại: <img class="thumb" th:src="@{'/images/' + ${sanPham.hinhAnh}}" alt="">
+                            (chọn file mới để thay thế)
+                        </span>
+                    </label>
+
+                    <div class="span-2 checks">
+                        <label class="check"><input type="checkbox" th:field="*{trangThai}"> Đang bán (hiển thị ở cửa hàng)</label>
+                        <label class="check"><input type="checkbox" th:field="*{noiBat}"> Sản phẩm nổi bật</label>
+                        <label class="check"><input type="checkbox" th:field="*{banChay}"> Bán chạy</label>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn">Lưu sản phẩm</button>
+                    <a class="btn-sm" th:href="@{/admin/san-pham}">Hủy</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>

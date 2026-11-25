@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Chi tiết đơn hàng | PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments :: shopHeader}"></div>
+    <main class="container page-main">
+        <a class="back-link" th:href="@{/don-hang}">← Đơn hàng của tôi</a>
+        <h1>Đơn <span th:text="${donHang.maDon}">PG000001</span>
+            <span class="tag" th:classappend="${donHang.trangThai.mau}" th:text="${donHang.trangThai.nhan}">st</span></h1>
+        <div th:replace="~{fragments :: flash}"></div>
+
+        <div class="cart-layout">
+            <div>
+                <section class="panel">
+                    <h2>Sản phẩm</h2>
+                    <table class="table">
+                        <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th>SL</th><th>Thành tiền</th></tr></thead>
+                        <tbody>
+                            <tr th:each="ct : ${donHang.chiTiets}">
+                                <td><a class="text-link" th:href="@{/san-pham/{id}(id=${ct.sanPham.idSanPham})}" th:text="${ct.tenSanPham}">SP</a></td>
+                                <td th:text="${#numbers.formatDecimal(ct.donGia, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0</td>
+                                <td th:text="${ct.soLuong}">1</td>
+                                <td th:text="${#numbers.formatDecimal(ct.thanhTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                    <div th:replace="~{ma-giam-gia :: chiTiet}"></div>
+                    <p class="sum-row total"><span>Tổng cộng</span>
+                        <strong th:text="${#numbers.formatDecimal(donHang.tongTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0</strong></p>
+                </section>
+
+                <section class="panel pay-box" th:if="${donHang.trangThai.name() != 'DA_HUY' and !donHang.daThanhToan}">
+                    <h2>Thanh toán</h2>
+                    <div th:if="${donHang.phuongThuc.name() == 'COD'}">
+                        <p>Bạn sẽ thanh toán <strong th:text="${#numbers.formatDecimal(donHang.conNo, 0, 'POINT', 0, 'COMMA')} + ' ₫'"></strong> khi nhận hàng.</p>
+                    </div>
+                    <div th:if="${donHang.phuongThuc.name() == 'CHUYEN_KHOAN'}">
+                        <p>Vui lòng quét mã QR bên dưới hoặc chuyển khoản theo thông tin sau (hệ thống sẽ <strong>tự động xác nhận</strong> khi nhận được tiền):</p>
+                        
+                        <div style="display: flex; gap: 24px; flex-wrap: wrap; align-items: flex-start; margin: 16px 0;">
+                            <div style="text-align: center; background: #fff; padding: 14px; border-radius: 10px; border: 1px solid #cbd5e1; box-shadow: 0 4px 6px -1px rgba(0,0,0,0.07); width: 260px; max-width: 100%;">
+                                <img th:if="${qrUrl}" th:src="${qrUrl}" alt="Mã QR Chuyển Khoản VietQR" style="width: 100%; height: auto; display: block; border-radius: 6px;" />
+                                <div style="margin-top: 10px; font-size: 0.82rem; color: #64748b; line-height: 1.4;">
+                                    Quét bằng ứng dụng Ngân hàng<br>hoặc ví điện tử
+                                </div>
+                            </div>
+
+                            <div style="flex: 1; min-width: 250px;">
+                                <table class="spec-table" style="width: 100%;">
+                                    <tr>
+                                        <th>Ngân hàng</th>
+                                        <td><strong th:text="${sepayConfig != null ? sepayConfig.bankName : 'MB Bank'}">MB Bank</strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Số tài khoản</th>
+                                        <td>
+                                            <span id="txtStk" style="font-weight: 600; font-size: 1.05rem;" th:text="${sepayConfig != null ? sepayConfig.accountNumber : '0906349828'}">0906349828</span>
+                                            <button type="button" onclick="copyText('txtStk', this)" style="margin-left: 8px; padding: 2px 8px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #f8fafc; cursor: pointer;">Sao chép</button>
+                                        </td>
+                                    </tr>
+                                    <tr>
+                                        <th>Chủ tài khoản</th>
+                                        <td th:text="${sepayConfig != null ? sepayConfig.accountName : 'CONG TY PEANUTGEAR'}">CONG TY PEANUTGEAR</td>
+                                    </tr>
+                                    <tr>
+                                        <th>Số tiền</th>
+                                        <td><strong style="color: #0891b2; font-size: 1.1rem;" th:text="${#numbers.formatDecimal(donHang.conNo, 0, 'POINT', 0, 'COMMA')} + ' ₫'"></strong></td>
+                                    </tr>
+                                    <tr>
+                                        <th>Nội dung CK</th>
+                                        <td>
+                                            <strong id="txtMaDon" style="color: #dc2626; font-size: 1.1rem; letter-spacing: 0.5px;" th:text="${donHang.maDon}">PG000001</strong>
+                                            <button type="button" onclick="copyText('txtMaDon', this)" style="margin-left: 8px; padding: 2px 8px; font-size: 0.75rem; border: 1px solid #cbd5e1; border-radius: 4px; background: #f8fafc; cursor: pointer;">Sao chép</button>
+                                            <div style="font-size: 0.78rem; color: #dc2626; margin-top: 4px;">* Vui lòng giữ nguyên nội dung chuyển khoản để hệ thống xác nhận tự động.</div>
+                                        </td>
+                                    </tr>
+                                </table>
+
+                                <div id="payment-status-box" style="margin-top: 14px; padding: 12px 14px; background: #fef3c7; border: 1px solid #fde68a; border-radius: 8px; color: #92400e; font-size: 0.9rem; display: flex; align-items: center; gap: 10px;">
+                                    <span class="pay-spinner"></span>
+                                    <span>Đang chờ bạn quét mã & chuyển khoản... Trang sẽ tự động thoát và hoàn tất khi nhận được tiền.</span>
+                                </div>
+
+                                <div th:if="${sepayConfig != null and sepayConfig.demoEnabled}" style="margin-top: 8px; text-align: right;">
+                                    <button type="button" onclick="simulatePayment()" style="background: none; border: 1px dashed #94a3b8; color: #64748b; font-size: 0.78rem; padding: 4px 10px; border-radius: 6px; cursor: pointer;">
+                                        🧪 Thử nghiệm: Giả lập quét mã thanh toán thành công
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div th:if="${donHang.phuongThuc.name() == 'ONLINE'}">
+                        <p>Thanh toán online <em>(chế độ demo, không trừ tiền thật)</em>.</p>
+                        <form th:action="@{/don-hang/{id}/thanh-toan-online(id=${donHang.idDonHang})}" method="post">
+                            <button type="submit" class="btn">Thanh toán ngay</button>
+                        </form>
+                    </div>
+                </section>
+            </div>
+
+            <aside class="summary">
+                <h2>Thông tin đơn</h2>
+                <a class="btn-sm" th:if="${donHang.trangThai.name() == 'HOAN_THANH'}" th:href="@{/don-hang/{id}/hoa-don(id=${donHang.idDonHang})}">Tra cứu hóa đơn</a>
+                <a class="btn-sm" th:if="${donHang.trangThai.name() == 'HOAN_THANH'}" th:href="@{/don-hang/{id}/doi-tra(id=${donHang.idDonHang})}">Yêu cầu đổi trả</a>
+                <p><b>Ngày đặt:</b> <span th:text="${#temporals.format(donHang.ngayTao, 'dd/MM/yyyy HH:mm')}"></span></p>
+                <p><b>Người nhận:</b> <span th:text="${donHang.hoTenNhan}"></span></p>
+                <p><b>Điện thoại:</b> <span th:text="${donHang.soDienThoai}"></span></p>
+                <p><b>Địa chỉ:</b> <span th:text="${donHang.diaChi}"></span></p>
+                <p th:if="${donHang.ghiChu != null and !#strings.isEmpty(donHang.ghiChu)}"><b>Ghi chú:</b> <span th:text="${donHang.ghiChu}"></span></p>
+                <p><b>Phương thức:</b> <span th:text="${donHang.phuongThuc.nhan}"></span></p>
+                <p><b>Thanh toán:</b>
+                    <span th:if="${donHang.tongThu.signum() > 0}">Đã thu <b th:text="|${#numbers.formatDecimal(donHang.tongThu, 1, 'POINT', 0, 'COMMA')} ₫|"></b> · Đã hoàn <b th:text="|${#numbers.formatDecimal(donHang.tongHoan, 1, 'POINT', 0, 'COMMA')} ₫|"></b> · Còn phải trả <b th:text="|${#numbers.formatDecimal(donHang.conNo, 1, 'POINT', 0, 'COMMA')} ₫|"></b></span>
+                    <span class="tag tag-green" th:if="${donHang.daThanhToan}" th:text="${donHang.nhanThanhToan}"></span>
+                    <span class="tag tag-yellow" th:unless="${donHang.daThanhToan}" th:text="${donHang.nhanThanhToan}"></span></p>
+                <p class="muted" th:if="${donHang.datTruoc}">Đơn đặt trước: cửa hàng sẽ liên hệ khi hàng về.</p>
+                <p class="muted" th:if="${donHang.canHoanTien}">Đơn đã hủy. Vui lòng liên hệ cửa hàng để đối chiếu khoản đã thanh toán.</p>
+                <details th:if="${vanChuyen.buoc != null}"><summary th:text="|Theo dõi giao hàng · ${vanChuyen.buoc.nhan}|"></summary>
+                    <p th:if="${vanChuyen.giao?.donVi != null}" th:text="|${vanChuyen.giao.donVi} · ${vanChuyen.giao.maVanDon}|"></p>
+                    <ul th:if="${!vanChuyen.nhatKy.isEmpty()}"><li th:each="n : ${vanChuyen.nhatKy}">
+                        <span th:text="|${#temporals.format(n.thoiDiem, 'dd/MM HH:mm')} · ${n.suKien}|"></span>
+                        <span th:text="${n.noiDung}"></span></li></ul>
+                </details>
+                <form th:if="${choNhanHang}" method="post" th:action="@{/don-hang/{id}/da-nhan(id=${donHang.idDonHang})}">
+                    <input type="hidden" name="lan" th:value="${vanChuyen.lan}">
+                    <button class="btn-sm" type="submit">Tôi đã nhận hàng</button>
+                </form>
+                <form th:if="${donHang.choPhepHuy()}" th:action="@{/don-hang/{id}/huy(id=${donHang.idDonHang})}" method="post"
+                      onsubmit="return confirm('Hủy đơn hàng này?');">
+                    <button type="submit" class="btn-sm danger">Hủy đơn</button>
+                </form>
+            </aside>
+        </div>
+    </main>
+    <div th:replace="~{fragments :: shopFooter}"></div>
+
+    <style>
+        .pay-spinner {
+            width: 18px;
+            height: 18px;
+            border: 2px solid #b45309;
+            border-top-color: transparent;
+            border-radius: 50%;
+            display: inline-block;
+            animation: paySpin 0.9s linear infinite;
+            flex-shrink: 0;
+        }
+        @keyframes paySpin {
+            to { transform: rotate(360deg); }
+        }
+    </style>
+
+    <script th:inline="javascript">
+        function copyText(elemId, btn) {
+            const el = document.getElementById(elemId);
+            if (!el) return;
+            const text = el.innerText.trim();
+            navigator.clipboard.writeText(text).then(() => {
+                const old = btn.innerText;
+                btn.innerText = 'Đã chép!';
+                btn.style.background = '#dcfce7';
+                btn.style.color = '#166534';
+                setTimeout(() => {
+                    btn.innerText = old;
+                    btn.style.background = '#f8fafc';
+                    btn.style.color = 'inherit';
+                }, 2000);
+            });
+        }
+
+        function simulatePayment() {
+            if (!confirm('Thử nghiệm giả lập SePay gửi webhook đã nhận được tiền?')) return;
+            const maDon = [[${donHang.maDon}]];
+            fetch('/api/sepay/test-simulate/' + maDon, { method: 'POST' })
+                .then(r => r.json())
+                .then(res => {
+                    if (res.success) alert('Giả lập thành công. Công nợ chỉ cập nhật khi có tiền thực nhận.');
+                    checkStatus();
+                })
+                .catch(err => console.error(err));
+        }
+
+        const donHangId = [[${donHang.idDonHang}]];
+        let daXong = false;
+
+        const checkStatus = () => {
+            if (daXong || !donHangId) return;
+            fetch('/api/don-hang/' + donHangId + '/trang-thai-thanh-toan')
+                .then(r => r.json())
+                .then(data => {
+                    console.log('[Check Payment]', data);
+                    if (data && !data.daThanhToan && data.phienBan !== [[${donHang.phienBan}]]) {
+                        window.location.reload();
+                        return;
+                    }
+                    if (data && data.daThanhToan) {
+                        daXong = true;
+                        clearInterval(timer);
+                        const box = document.getElementById('payment-status-box');
+                        if (box) {
+                            box.style.background = '#dcfce7';
+                            box.style.borderColor = '#86efac';
+                            box.style.color = '#15803d';
+                            box.innerHTML = '<strong>✔ Thanh toán thành công! Đang chuyển đến trang hoàn tất đơn hàng...</strong>';
+                        }
+                        setTimeout(() => {
+                            window.location.href = '/don-hang/' + donHangId + '/thanh-cong';
+                        }, 1000);
+                    }
+                })
+                .catch(e => console.log('Chờ thanh toán...', e));
+        };
+
+        const timer = document.getElementById('payment-status-box') ? setInterval(checkStatus, 2500) : null;
+    </script>
+</body>
+</html>

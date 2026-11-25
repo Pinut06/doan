@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý đổi trả | PeanutGear</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body>
+<div th:replace="~{fragments :: shopHeader}"></div>
+<main class="container page-main">
+    <a class="back-link" th:href="@{/don-hang/{id}(id=${hs.don.idDonHang})}">← Chi tiết đơn hàng</a>
+    <h1 th:text="|Đổi trả đơn ${hs.don.maDon}|"></h1>
+    <div th:fragment="noiDung">
+        <div th:replace="~{fragments :: flash}"></div>
+        <form class="form-card wide" th:if="${hs.don.trangThai.name() == 'HOAN_THANH' and !hs.dongs.isEmpty()}" method="post"
+              th:action="${quanTri} ? @{/admin/don-hang/{id}/doi-tra(id=${hs.don.idDonHang})} : @{/don-hang/{id}/doi-tra(id=${hs.don.idDonHang})}">
+            <h2 th:text="${quanTri ? 'Tiếp nhận yêu cầu tại cửa hàng' : 'Gửi yêu cầu đổi trả'}"></h2>
+            <input type="hidden" name="maGui" th:value="${maGui}">
+            <div class="form-grid">
+                <label>Sản phẩm <select name="dong" required><option th:each="d : ${hs.dongs}" th:value="${d.hang.idChiTiet}" th:text="|${d.hang.tenSanPham} · còn ${d.conLai} được đổi trả|"></option></select></label>
+                <label>Số lượng <input type="number" name="soLuong" min="1" step="1" value="1" required></label>
+                <label>Hình thức <select name="loai"><option th:each="l : ${cacLoai}" th:value="${l}" th:text="${l.nhan}"></option></select></label>
+                <label>Lý do <textarea name="lyDo" maxlength="500" required></textarea></label>
+            </div><button class="btn" type="submit">Gửi yêu cầu</button>
+        </form>
+        <p class="muted" th:if="${hs.dongs.isEmpty()}">Đã có yêu cầu cho toàn bộ số lượng trong đơn.</p>
+        <h2>Hồ sơ đổi trả</h2>
+        <p th:if="${hs.yeuCaus.isEmpty()}">Chưa có yêu cầu đổi trả.</p>
+        <section class="panel" th:each="y : ${hs.yeuCaus}" th:id="|yc-${y.id}|" th:with="buoc=${y.buoc.name()}">
+            <h3 th:text="|ĐT-${y.id} · ${y.chiTiet.tenSanPham} × ${y.soLuong}|"></h3>
+            <p><b th:text="${y.loai.nhan}"></b> · <span class="tag" th:text="${y.buoc.nhan}"></span></p>
+            <p>Tiếp nhận <span th:text="${#temporals.format(y.ngayTao, 'dd/MM/yyyy HH:mm')}"></span> · <span th:text="${y.lyDo}"></span></p>
+            <p th:if="${y.ngayKiem != null}">Kiểm tra <span th:text="${#temporals.format(y.ngayKiem, 'dd/MM/yyyy HH:mm')}"></span> · <span th:text="${y.ketQuaKiem}"></span>
+                <span th:if="${quanTri}" th:text="| · ${y.nguoiKiem} · có thể bán lại ${y.soBanLai}/${y.soLuong}|"></span></p>
+            <p th:if="${y.ngayDuyet != null}"><b th:text="${buoc == 'TU_CHOI' ? 'Từ chối' : 'Duyệt'}"></b>
+                <span th:text="${#temporals.format(y.ngayDuyet, 'dd/MM/yyyy HH:mm')}"></span> <span th:if="${quanTri}" th:text="${y.nguoiDuyet}"></span>
+                <span th:text="${y.ghiChuDuyet}"></span></p>
+            <div th:if="${buoc == 'HOAN_TAT'}">
+                <p>Hoàn tất <span th:text="${#temporals.format(y.ngayXuLy, 'dd/MM/yyyy HH:mm')}"></span> <span th:if="${quanTri}" th:text="${y.nguoiXuLy}"></span></p>
+                <p th:if="${y.sanPhamDoi != null}" th:text="|Đã giao ${y.soLuong} × ${y.sanPhamDoi.tenSanPham} (${y.sanPhamDoi.maSanPham})|"></p>
+                <p th:if="${y.giaTriTra != null}">Giá trị trả hàng <span th:text="|${#numbers.formatDecimal(y.giaTriTra, 1, 'POINT', 0, 'COMMA')} ₫|"></span> · Thực hoàn <span th:text="|${#numbers.formatDecimal(y.phieuHoan?.soTien ?: 0, 1, 'POINT', 0, 'COMMA')} ₫|"></span>
+                    <a th:if="${quanTri and y.phieuHoan != null}" th:href="@{/admin/don-hang/{id}/thanh-toan/{p}(id=${hs.don.idDonHang},p=${y.phieuHoan.id})}" th:text="${y.phieuHoan.soPhieu}"></a></p>
+            </div>
+            <th:block th:if="${quanTri}">
+                <form class="inline-row" th:if="${buoc == 'TIEP_NHAN'}" th:action="@{/admin/don-hang/{id}/doi-tra/{yc}(id=${hs.don.idDonHang},yc=${y.id})}" method="post">
+                    <input type="hidden" name="buocCu" th:value="${y.buoc}">
+                    <label>Kết quả kiểm tra hàng nhận lại <input name="ghiChu" maxlength="500" required></label>
+                    <label>Số lượng có thể bán lại <input type="number" name="soBanLai" min="0" th:max="${y.soLuong}" required></label>
+                    <button class="btn-sm" name="thaoTac" value="KIEM">Ghi nhận kiểm tra</button>
+                </form>
+                <form th:if="${buoc == 'DA_KIEM_TRA'}" th:action="@{/admin/don-hang/{id}/doi-tra/{yc}(id=${hs.don.idDonHang},yc=${y.id})}" method="post">
+                    <input type="hidden" name="buocCu" th:value="${y.buoc}">
+                    <button class="btn" name="thaoTac" value="DUYET">Duyệt đổi trả</button>
+                </form>
+                <form class="inline-row" th:if="${buoc == 'TIEP_NHAN' or buoc == 'DA_KIEM_TRA'}" th:action="@{/admin/don-hang/{id}/doi-tra/{yc}(id=${hs.don.idDonHang},yc=${y.id})}" method="post">
+                    <input type="hidden" name="buocCu" th:value="${y.buoc}">
+                    <label>Lý do từ chối và hướng trả hàng cho khách <input name="ghiChu" maxlength="500" required></label>
+                    <button class="btn-sm" name="thaoTac" value="TU_CHOI">Từ chối yêu cầu</button>
+                </form>
+                <form class="form-card" th:if="${buoc == 'DA_DUYET' and y.loai.name() == 'TRA_HOAN_TIEN'}" th:with="t=${hs.duTinh.get(y.id)}" th:action="@{/admin/don-hang/{id}/doi-tra/{yc}(id=${hs.don.idDonHang},yc=${y.id})}" method="post">
+                    <input type="hidden" name="buocCu" th:value="${y.buoc}">
+                    <input type="hidden" name="giaTri" th:value="${t.giaTri}"><input type="hidden" name="tienHoan" th:value="${t.thucHoan}">
+                    <p>Giá trị hàng trả sau chiết khấu <span th:text="|${#numbers.formatDecimal(t.giaTri, 1, 'POINT', 0, 'COMMA')} ₫|"></span> · Cấn trừ công nợ <span th:text="|${#numbers.formatDecimal(t.giaTri.subtract(t.thucHoan), 1, 'POINT', 0, 'COMMA')} ₫|"></span> · Thực hoàn <span th:text="|${#numbers.formatDecimal(t.thucHoan, 1, 'POINT', 0, 'COMMA')} ₫|"></span></p>
+                    <div class="form-grid" th:if="${t.thucHoan.signum() > 0}">
+                        <label>Hình thức hoàn <select name="hinhThuc"><option value="TIEN_MAT">Tiền mặt</option><option value="CHUYEN_KHOAN">Chuyển khoản</option></select></label>
+                        <label>Người nhận tiền <input name="nguoiNhan" required maxlength="255" th:value="${hs.don.hoTenNhan}"></label>
+                        <label>Mã giao dịch khi chuyển khoản <input name="thamChieu" maxlength="100"></label>
+                    </div>
+                    <button class="btn" name="thaoTac" value="HOAN_TIEN" th:text="${t.thucHoan.signum() > 0 ? 'Xác nhận đã hoàn tiền' : 'Hoàn tất ghi giảm giá trị đơn'}"></button>
+                </form>
+                <form class="inline-row" th:if="${buoc == 'DA_DUYET' and y.loai.name() == 'DOI_SAN_PHAM'}" th:with="ds=${hs.hangDoi.get(y.id)}" th:action="@{/admin/don-hang/{id}/doi-tra/{yc}(id=${hs.don.idDonHang},yc=${y.id})}" method="post">
+                    <input type="hidden" name="buocCu" th:value="${y.buoc}">
+                    <label>Hàng thay thế cùng mã hoặc cùng đơn giá mua <select name="spDoi" required><option value="">Chọn sản phẩm</option>
+                        <option th:each="sp : ${ds}" th:value="${sp.idSanPham}" th:text="|${sp.tenSanPham} (${sp.maSanPham}) · tồn ${sp.soLuongTon}|"></option>
+                    </select></label>
+                    <span th:if="${ds.isEmpty()}">Chưa có sản phẩm đủ tồn để đổi.</span>
+                    <button class="btn" name="thaoTac" value="DOI_HANG" th:disabled="${ds.isEmpty()}">Xác nhận đã giao hàng đổi</button>
+                </form>
+            </th:block>
+        </section>
+    </div>
+</main>
+<div th:replace="~{fragments :: shopFooter}"></div>
+</body></html>

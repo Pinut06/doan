@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${sanPham.tenSanPham} + ' | PeanutGear'">Chi tiết sản phẩm | PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div th:replace="~{fragments :: shopHeader}"></div>
+
+    <main class="container detail-main">
+        <a class="back-link" th:href="@{/}">← Trở về cửa hàng</a>
+        <div th:replace="~{fragments :: flash}"></div>
+
+        <section class="product-detail">
+            <div class="detail-image-wrap">
+                <img th:if="${sanPham.hinhAnh != null and !#strings.isEmpty(sanPham.hinhAnh)}"
+                     th:src="@{'/images/' + ${sanPham.hinhAnh}}" th:alt="${sanPham.tenSanPham}">
+                <div class="img-placeholder big" th:if="${sanPham.hinhAnh == null or #strings.isEmpty(sanPham.hinhAnh)}"
+                     th:text="${sanPham.thuongHieu != null ? sanPham.thuongHieu : 'PEANUT'}">PEANUT</div>
+                <span class="badge badge-hot" th:if="${sanPham.noiBat}">Nổi bật</span>
+                <span class="badge badge-pre" th:if="${sanPham.datTruocDuoc}">Đặt trước</span>
+            </div>
+
+            <div class="detail-content">
+                <p class="detail-eyebrow"
+                   th:text="${sanPham.danhMuc != null ? sanPham.danhMuc.tenDanhMuc : 'Phụ kiện'}">Danh mục</p>
+                <h1 th:text="${sanPham.tenSanPham}">Tên sản phẩm</h1>
+
+                <a class="rating-line" href="#binh-luan">
+                    <span class="stars" th:if="${diemTb != null}"
+                          th:text="${#strings.repeat('★', T(java.lang.Math).round(diemTb))}">★★★★★</span>
+                    <span th:if="${diemTb != null}"
+                          th:text="${#numbers.formatDecimal(diemTb, 1, 'POINT', 1, 'COMMA')} + ' / 5 · ' + ${#lists.size(binhLuans)} + ' đánh giá'">5 / 5</span>
+                    <span class="muted" th:if="${diemTb == null}">Chưa có đánh giá — hãy là người đầu tiên</span>
+                </a>
+
+                <p class="detail-price"
+                   th:text="${#numbers.formatDecimal(sanPham.giaBan, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</p>
+                <p class="muted" th:with="km=${sanPham.khuyenMaiHienTai}" th:if="${sanPham.khuyenMaiHienTai != null}">
+                    <del th:text="|${#numbers.formatDecimal(sanPham.giaCoBan, 0, 'POINT', 0, 'COMMA')} ₫|"></del>
+                    · <strong th:text="${km.ten}"></strong>
+                    · <span th:text="|Giảm ${km.phanTram}% đến hết ${#temporals.format(km.denNgay, 'dd/MM/yyyy')}|"></span>
+                </p>
+
+                <p class="stock-line">
+                    <span class="stock ok" th:if="${sanPham.soLuongTon > 5}">✔ Còn hàng</span>
+                    <span class="stock low" th:if="${sanPham.soLuongTon > 0 and sanPham.soLuongTon <= 5}"
+                          th:text="'⚠ Chỉ còn ' + ${sanPham.soLuongTon} + ' sản phẩm'">Sắp hết</span>
+                    <span class="stock out" th:if="${sanPham.hetHang and !sanPham.datTruocDuoc}">✖ Hết hàng</span>
+                    <span class="stock pre" th:if="${sanPham.datTruocDuoc}">⏳ Hết hàng — nhận đặt trước</span>
+                </p>
+                <p class="preorder-note" th:if="${sanPham.datTruocDuoc}">
+                    Sản phẩm đặt trước sẽ được giao khi hàng về
+                    <b th:if="${sanPham.ngayDuKien != null}"
+                       th:text="'(dự kiến ' + ${#temporals.format(sanPham.ngayDuKien, 'dd/MM/yyyy')} + ')'"></b>.
+                    Đơn đặt trước được tách riêng khỏi đơn hàng thường.
+                </p>
+
+                <form class="buy-form" th:action="@{/gio-hang/them}" method="post"
+                      th:if="${!sanPham.hetHang or sanPham.datTruocDuoc}">
+                    <input type="hidden" name="id" th:value="${sanPham.idSanPham}">
+                    <label class="qty-label">Số lượng
+                        <input type="number" name="soLuong" value="1" min="1"
+                               th:max="${sanPham.hetHang ? 10 : (sanPham.soLuongTon < 10 ? sanPham.soLuongTon : 10)}">
+                    </label>
+                    <div class="buy-actions">
+                        <button type="submit" name="muaNgay" value="true" class="btn"
+                                th:text="${sanPham.datTruocDuoc} ? '⏳ Đặt trước ngay' : '⚡ Mua ngay'">Mua ngay</button>
+                        <button type="submit" name="muaNgay" value="false" class="btn btn-outline">🛒 Thêm vào giỏ</button>
+                    </div>
+                </form>
+                <button type="button" class="btn btn-disabled" disabled
+                        th:if="${sanPham.hetHang and !sanPham.datTruocDuoc}">Tạm hết hàng</button>
+
+                <table class="spec-table">
+                    <tr th:if="${sanPham.maSanPham != null}">
+                        <th>Mã sản phẩm</th><td th:text="${sanPham.maSanPham}">SP-001</td>
+                    </tr>
+                    <tr th:if="${sanPham.thuongHieu != null}">
+                        <th>Thương hiệu</th><td th:text="${sanPham.thuongHieu}">Brand</td>
+                    </tr>
+                    <tr th:if="${sanPham.baoHanhThang != null}">
+                        <th>Bảo hành</th><td th:text="${sanPham.baoHanhThang} + ' tháng'">12 tháng</td>
+                    </tr>
+                </table>
+
+                <p class="contact-note">📞 Cần tư vấn? Gọi hotline <strong>0906349828</strong>.</p>
+            </div>
+        </section>
+
+        <section class="desc-section" id="mo-ta">
+            <h2>📝 Mô tả sản phẩm</h2>
+            <div class="desc-grid">
+                <div class="desc-card" th:if="${!#lists.isEmpty(sanPham.diemNoiBat)}">
+                    <h3>Điểm nổi bật</h3>
+                    <ul class="highlight-list">
+                        <li th:each="d : ${sanPham.diemNoiBat}" th:text="${d}">Điểm nổi bật</li>
+                    </ul>
+                </div>
+                <div class="desc-card" th:if="${!#lists.isEmpty(sanPham.thongSo)}">
+                    <h3>Thông số kỹ thuật</h3>
+                    <table class="spec-big">
+                        <tr th:each="ts : ${sanPham.thongSo}">
+                            <th th:text="${ts[0]}">Thông số</th>
+                            <td th:text="${ts[1]}">Giá trị</td>
+                        </tr>
+                    </table>
+                </div>
+                <div class="desc-card" th:if="${#lists.isEmpty(sanPham.diemNoiBat) and #lists.isEmpty(sanPham.thongSo)}">
+                    <p>Sản phẩm chính hãng, chất lượng đảm bảo.</p>
+                </div>
+            </div>
+        </section>
+
+        <section class="comments" id="binh-luan">
+            <h2>💬 Đánh giá & bình luận
+                <small class="muted" th:text="'(' + ${#lists.size(binhLuans)} + ')'">(0)</small></h2>
+
+            <div class="alert alert-ok" th:if="${thongBaoBinhLuan}" th:text="${thongBaoBinhLuan}"></div>
+            <div class="alert alert-err" th:if="${loiBinhLuan}" th:text="${loiBinhLuan}"></div>
+
+<form class="comment-form" sec:authorize="hasRole('USER')"
+                  th:action="@{/san-pham/{id}/binh-luan(id=${sanPham.idSanPham})}" method="post">
+                <label>Chấm điểm</label>
+                <div class="star-rating" id="starRating">
+                    <span class="star active" data-value="1">&#9733;</span>
+                    <span class="star active" data-value="2">&#9733;</span>
+                    <span class="star active" data-value="3">&#9733;</span>
+                    <span class="star active" data-value="4">&#9733;</span>
+                    <span class="star active" data-value="5">&#9733;</span>
+                </div>
+                <input type="hidden" id="ratingValue" name="soSao" value="5">
+
+                <label>Nội dung
+                    <textarea name="noiDung" rows="3" maxlength="1000" required
+                              placeholder="Chia sẻ trải nghiệm của bạn về sản phẩm..."></textarea>
+                </label>
+                <button type="submit" class="btn">Gửi bình luận</button>
+            </form>
+            <p class="login-hint" sec:authorize="!isAuthenticated()">
+                <a class="text-link" th:href="@{/login}">Đăng nhập</a> để bình luận và đánh giá sản phẩm.
+            </p>
+            <p class="login-hint" sec:authorize="hasRole('ADMIN')">
+                Bạn đang đăng nhập bằng tài khoản quản trị — quản trị viên không bình luận / mua hàng,
+                nhưng có thể xóa bình luận vi phạm.
+            </p>
+
+            <p class="empty-note" th:if="${#lists.isEmpty(binhLuans)}">Chưa có bình luận nào.</p>
+            <div class="comment" th:each="b : ${binhLuans}">
+                <div class="comment-head">
+                    <strong th:text="${b.khachHang.hoTen != null and !#strings.isEmpty(b.khachHang.hoTen) ? b.khachHang.hoTen : b.khachHang.tenDangNhap}">Người dùng</strong>
+                    <span class="stars" th:text="${#strings.repeat('★', b.soSao)}">★★★★★</span>
+                    <span class="muted" th:text="${#temporals.format(b.ngayTao, 'dd/MM/yyyy HH:mm')}">01/01/2026</span>
+                    <form class="inline-form" method="post" th:action="@{/binh-luan/{id}/xoa(id=${b.idBinhLuan})}"
+                          th:if="${#authorization.expression('isAuthenticated()') and (#authorization.expression('hasRole(''ADMIN'')') or #authentication.name == b.khachHang.tenDangNhap)}">
+                        <button type="submit" class="link-btn del-btn"
+                                onclick="return confirm('Xóa bình luận này?')">Xóa</button>
+                    </form>
+                </div>
+                <p th:text="${b.noiDung}">Nội dung</p>
+            </div>
+        </section>
+
+        <section class="products related" th:if="${!#lists.isEmpty(lienQuan)}">
+            <h2>Sản phẩm liên quan</h2>
+            <div class="product-grid">
+                <th:block th:each="sp : ${lienQuan}"><th:block th:replace="~{fragments :: productCard(${sp})}"/></th:block>
+            </div>
+        </section>
+    </main>
+
+    <div th:replace="~{fragments :: shopFooter}"></div>
+
+    <script>
+    const stars = document.querySelectorAll('#starRating .star');
+    const ratingInput = document.getElementById('ratingValue');
+    let selectedRating = 5;
+
+    stars.forEach((star, index) => {
+        star.addEventListener('mouseover', () => {
+            resetAllStars();
+            for (let i = 0; i <= index; i++) {
+                stars[i].classList.add('hover');
+            }
+        });
+
+        star.addEventListener('mouseout', () => {
+            resetAllStars();
+            highlightStars(selectedRating);
+        });
+
+        star.addEventListener('click', () => {
+            selectedRating = index + 1;
+            ratingInput.value = selectedRating;
+            highlightStars(selectedRating);
+        });
+    });
+
+    function resetAllStars() {
+        stars.forEach(s => {
+            s.classList.remove('hover', 'active');
+        });
+    }
+
+    function highlightStars(count) {
+        for (let i = 0; i < count; i++) {
+            stars[i].classList.add('active');
+        }
+    }
+</script>
+</body>
+
+</html>

@@ -1,0 +1,66 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý giá | Quản trị PeanutGear</title>
+    <link rel="icon" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('san-pham')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head">
+            <h1 th:text="${sp.tenSanPham}">Quản lý giá</h1>
+            <a class="btn-sm" th:href="@{/admin/san-pham/bang-gia}">Bảng giá và tồn kho</a>
+        </div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <form class="form-card" method="post" th:action="@{/admin/san-pham/bang-gia/{id}/gia(id=${sp.idSanPham})}">
+            <input type="hidden" name="giaCu" th:value="${sp.giaCoBan}">
+            <label>Giá niêm yết (₫)
+                <input type="number" name="giaMoi" min="0" max="999999999999999" step="1" th:value="${sp.giaCoBan}" required>
+            </label>
+            <button class="btn-sm" type="submit">Lưu giá niêm yết</button>
+        </form>
+        <h2>Lịch khuyến mãi</h2>
+        <p th:if="${#lists.isEmpty(sp.lichKhuyenMai)}">Sản phẩm chưa có chương trình khuyến mãi.</p>
+        <div class="table-wrap" th:unless="${#lists.isEmpty(sp.lichKhuyenMai)}">
+            <table class="table">
+                <thead><tr><th>Chương trình</th><th>Mức giảm</th><th>Từ ngày</th><th>Đến hết ngày</th><th></th></tr></thead>
+                <tbody><tr th:each="km : ${sp.lichKhuyenMai}">
+                    <td th:text="${km.ten}"></td><td th:text="|${km.phanTram}%|"></td>
+                    <td th:text="${#temporals.format(km.tuNgay, 'dd/MM/yyyy')}"></td>
+                    <td th:text="${#temporals.format(km.denNgay, 'dd/MM/yyyy')}"></td>
+                    <td class="actions">
+                        <a class="btn-sm" th:href="@{/admin/san-pham/bang-gia/{id}(id=${sp.idSanPham},sua=${km.id})}">Sửa</a>
+                        <form method="post" th:action="@{/admin/san-pham/bang-gia/{id}/khuyen-mai/{ma}/xoa(id=${sp.idSanPham},ma=${km.id})}"
+                              onsubmit="return confirm('Xóa chương trình khuyến mãi này?')">
+                            <button class="btn-sm danger" type="submit">Xóa</button>
+                        </form>
+                    </td>
+                </tr></tbody>
+            </table>
+        </div>
+        <h2 th:text="${lich.ma == null ? 'Thêm chương trình' : 'Sửa chương trình'}"></h2>
+        <form class="form-card" method="post" th:object="${lich}"
+              th:action="@{/admin/san-pham/bang-gia/{id}/khuyen-mai(id=${sp.idSanPham})}">
+            <input type="hidden" th:field="*{ma}">
+            <div class="alert alert-err" th:if="${#fields.hasAnyErrors()}">
+                <p th:each="msg : ${#fields.allErrors()}" th:text="${msg}"></p>
+            </div>
+            <div class="form-grid">
+                <label>Tên chương trình <input type="text" th:field="*{ten}" maxlength="120" required></label>
+                <label>Mức giảm (%) <input type="number" th:field="*{mucGiam}" min="1" max="100" required></label>
+                <label>Từ ngày <input type="date" th:field="*{tu}" required></label>
+                <label>Đến hết ngày <input type="date" th:field="*{den}" required></label>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn">Lưu chương trình</button>
+                <a class="btn-sm" th:if="*{ma != null}" th:href="@{/admin/san-pham/bang-gia/{id}(id=${sp.idSanPham})}">Hủy sửa</a>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

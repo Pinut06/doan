@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hồ sơ khách hàng | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('tai-khoan')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head">
+            <h1 th:text="${#strings.isEmpty(khach.hoTen) ? khach.tenDangNhap : khach.hoTen}">Hồ sơ khách hàng</h1>
+            <a class="btn-sm" th:href="@{/admin/tai-khoan}">Danh sách khách hàng</a>
+        </div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <section class="panel">
+            <div class="admin-head">
+                <h2>Thông tin liên hệ</h2>
+                <a class="btn-sm" th:href="@{/admin/tai-khoan/{id}/edit(id=${khach.idKhachHang})}">Sửa hồ sơ</a>
+            </div>
+            <dl>
+                <dt>Tên đăng nhập</dt><dd th:text="${khach.tenDangNhap}"></dd>
+                <dt>Nhóm khách hàng</dt><dd th:text="${khach.nhomKhachHang.nhan}"></dd>
+                <dt>Email</dt><dd th:text="${#strings.isEmpty(khach.email) ? 'Chưa cập nhật' : khach.email}"></dd>
+                <dt>Số điện thoại</dt><dd th:text="${khach.soDienThoai ?: 'Chưa cập nhật'}"></dd>
+                <dt>Địa chỉ</dt><dd th:text="${khach.diaChi ?: 'Chưa cập nhật'}"></dd>
+            </dl>
+        </section>
+        <section>
+            <h2>Lịch sử giao dịch</h2>
+            <p th:if="${#lists.isEmpty(donHangs)}">Khách hàng chưa có giao dịch.</p>
+            <div class="table-wrap" th:unless="${#lists.isEmpty(donHangs)}">
+                <table class="table">
+                    <thead><tr><th>Mã đơn</th><th>Ngày đặt</th><th>Tổng tiền</th><th>Phương thức</th><th>Thanh toán</th><th>Trạng thái đơn</th></tr></thead>
+                    <tbody>
+                    <tr th:each="don : ${donHangs}">
+                        <td><a th:href="@{/admin/don-hang/{id}(id=${don.idDonHang})}" th:text="${don.maDon ?: don.idDonHang}"></a></td>
+                        <td th:text="${#temporals.format(don.ngayTao, 'dd/MM/yyyy HH:mm')}"></td>
+                        <td th:text="${#numbers.formatDecimal(don.tongTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'"></td>
+                        <td th:text="${don.phuongThuc.nhan}"></td>
+                        <td th:text="${don.nhanThanhToan}"></td>
+                        <td><span class="tag" th:classappend="${don.trangThai.mau}" th:text="${don.trangThai.nhan}"></span></td>
+                    </tr>
+                    </tbody>
+                </table>
+            </div>
+        </section>
+    </main>
+</div>
+</body>
+</html>

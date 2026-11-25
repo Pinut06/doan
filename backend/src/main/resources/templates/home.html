@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>PeanutGear | Phụ kiện công nghệ chính hãng</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body>
+    <div th:replace="~{fragments :: shopHeader}"></div>
+
+<section class="hero-slider-section" th:unless="${dangLoc}">
+        <div class="banner-container">
+            <div class="banner-slides">
+                <div class="banner-slide">
+                    <img th:src="@{/images/banner1.png}" alt="Banner 1">
+                    <div class="banner-caption">
+                        <span class="banner-subtitle">Chuột chơi game siêu nhẹ</span>
+                        <h2>Chuột Gaming cao cấp</h2>
+                        <a th:href="@{/(danhMuc=3)}" class="btn-xem-them">Xem thêm</a>
+                    </div>
+                </div>
+                <div class="banner-slide">
+                    <img th:src="@{/images/banner2.png}" alt="Banner 2">
+                    <div class="banner-caption">
+                        <span class="banner-subtitle">Bàn phím cơ switch mượt mà</span>
+                        <h2>Bàn phím eSports</h2>
+                        <a th:href="@{/(danhMuc=4)}" class="btn-xem-them">Xem thêm</a>
+                    </div>
+                </div>
+                <div class="banner-slide">
+                    <img th:src="@{/images/banner3.png}" alt="Banner 3">
+                    <div class="banner-caption">
+                        <span class="banner-subtitle">Pad chuột FPS chuyên dụng</span>
+                        <h2>Pad chuột artisan</h2>
+                        <a th:href="@{/(danhMuc=5)}" class="btn-xem-them">Xem thêm</a>
+                    </div>
+                </div>
+            </div>
+            
+            <button class="banner-btn prev" onclick="moveSlide(-1)">&#10094;</button>
+            <button class="banner-btn next" onclick="moveSlide(1)">&#10095;</button>
+
+            <div class="banner-dots">
+                <span class="dot active" onclick="currentSlide(0)">1</span>
+                <span class="dot" onclick="currentSlide(1)">2</span>
+                <span class="dot" onclick="currentSlide(2)">3</span>
+            </div>
+        </div>
+    </section>
+    <section class="categories">
+        <div class="container">
+            <div class="chips">
+                <a class="chip" th:href="@{/}" th:classappend="${danhMucChon == null} ? 'active'">Tất cả</a>
+                <a class="chip" th:each="dm : ${danhMucs}"
+                   th:href="@{/(danhMuc=${dm.idDanhMuc})}"
+                   th:classappend="${danhMucChon != null and danhMucChon == dm.idDanhMuc} ? 'active'"
+                   th:text="${dm.tenDanhMuc}">Danh mục</a>
+            </div>
+        </div>
+    </section>
+
+    <section class="products" th:if="${!#lists.isEmpty(noiBat)}">
+        <div class="container">
+            <h2>⭐ Sản phẩm nổi bật</h2>
+              <div class="product-grid">
+                <th:block th:each="sp : ${noiBat}"><th:block th:replace="~{fragments :: productCard(${sp})}"/></th:block>
+            </div>
+        </div>
+    </section>
+
+    <section class="products" id="san-pham">
+        <div class="container">
+            <h2 th:text="${dangLoc} ? 'Kết quả tìm được (' + ${#lists.size(sanPhams)} + ')' : 'Tất cả sản phẩm'">Tất cả sản phẩm</h2>
+            <div class="product-grid" th:if="${!#lists.isEmpty(sanPhams)}">
+                <th:block th:each="sp : ${sanPhams}"><th:block th:replace="~{fragments :: productCard(${sp})}"/></th:block>
+            </div>
+            <p class="empty-note" th:if="${#lists.isEmpty(sanPhams)}">Không tìm thấy sản phẩm phù hợp.</p>
+        </div>
+    </section>
+
+    <div th:replace="~{fragments :: shopFooter}"></div>
+
+<script>
+    let slideIndex = 0;
+    const slides = document.querySelectorAll('.banner-slide');
+    const dots = document.querySelectorAll('.banner-dots .dot');
+    const totalSlides = slides.length;
+
+    function showSlide(index) {
+        if (index >= totalSlides) {
+            slideIndex = 0;
+        } else if (index < 0) {
+            slideIndex = totalSlides - 1;
+        } else {
+            slideIndex = index;
+        }
+        
+        const offset = -slideIndex * 100;
+        const slidesContainer = document.querySelector('.banner-slides');
+        if (slidesContainer) {
+            slidesContainer.style.transform = `translateX(${offset}%)`;
+        }
+
+        dots.forEach((dot, i) => {
+            if (i === slideIndex) {
+                dot.classList.add('active');
+            } else {
+                dot.classList.remove('active');
+            }
+        });
+    }
+
+    function moveSlide(n) {
+        showSlide(slideIndex + n);
+    }
+
+    function currentSlide(n) {
+        showSlide(n);
+    }
+
+    if (totalSlides > 0) {
+        setInterval(() => {
+            slideIndex++;
+            showSlide(slideIndex);
+        }, 10000);
+    }
+</script>
+</body>
+
+</html>
