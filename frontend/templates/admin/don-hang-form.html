@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Phiếu đơn hàng | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head">
+            <h1 th:text="${don == null ? 'Tạo đơn hàng' : 'Cập nhật đơn ' + don.maDon}"></h1>
+            <a class="btn-sm" th:href="${don == null} ? @{/admin/don-hang} : @{/admin/don-hang/{id}(id=${don.idDonHang})}">Quay lại</a>
+        </div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <form method="post" class="form-card wide"
+              th:action="${don == null} ? @{/admin/don-hang/new} : @{/admin/don-hang/{id}/edit(id=${don.idDonHang})}">
+            <input th:if="${don == null}" type="hidden" name="yeuCau" th:value="${yeuCau}">
+            <input th:if="${don != null}" type="hidden" name="phienBan" th:value="${don.phienBan}">
+            <div class="form-grid">
+                <label th:if="${don == null}">Khách hàng
+                    <select name="khachId" required>
+                        <option value="">Chọn khách hàng</option>
+                        <option th:each="k : ${khachs}" th:value="${k.idKhachHang}" th:selected="${khachId == k.idKhachHang}"
+                                th:text="${#strings.isEmpty(k.hoTen) ? k.tenDangNhap : k.hoTen + ' (' + k.tenDangNhap + ')'}"></option>
+                    </select>
+                </label>
+                <label th:if="${don == null}">Phương thức thanh toán
+                    <select name="phuongThuc" required>
+                        <option th:each="pt : ${phuongThucs}" th:value="${pt}" th:text="${pt.nhan}" th:selected="${giao != null and giao.phuongThuc == pt}"></option>
+                    </select>
+                </label>
+                <label>Họ tên người nhận <input type="text" name="hoTen" th:value="${giao?.hoTen}" maxlength="100" required></label>
+                <label>Số điện thoại <input type="tel" name="soDienThoai" th:value="${giao?.soDienThoai}" required></label>
+                <label class="span-2">Địa chỉ giao hàng <input type="text" name="diaChi" th:value="${giao?.diaChi}" maxlength="500" required></label>
+                <label class="span-2">Ghi chú <textarea name="ghiChu" rows="2" th:text="${giao?.ghiChu}" maxlength="500"></textarea></label>
+            </div>
+            <section th:if="${don == null or don.choSuaSoLuong}">
+                <h2>Sản phẩm</h2>
+                <p class="muted" th:text="${don == null ? 'Nhập số lượng cho sản phẩm cần bán. Hàng đặt trước được tách thành đơn riêng.' : 'Nhập 0 để bỏ một dòng. Đơn giữ nguyên đơn giá lúc đặt.'}"></p>
+                <div class="table-wrap">
+                    <table class="table">
+                        <thead><tr><th>Sản phẩm</th><th>Đơn giá</th><th th:if="${don == null}">Tồn kho</th><th>Số lượng</th></tr></thead>
+                        <tbody th:if="${don == null}">
+                            <tr th:each="sp : ${sanPhams}" th:if="${!sp.hetHang or sp.datTruocDuoc}">
+                                <td><strong th:text="${sp.tenSanPham}"></strong> <small th:text="${sp.maSanPham}"></small></td>
+                                <td th:text="|${#numbers.formatDecimal(sp.giaBan, 0, 'POINT', 0, 'COMMA')} ₫|"></td>
+                                <td><span th:text="${sp.soLuongTon}"></span> <span th:if="${sp.datTruocDuoc}" class="tag tag-blue">Đặt trước</span></td>
+                                <td><input type="hidden" name="sanPhamId" th:value="${sp.idSanPham}">
+                                    <input type="hidden" name="giaXem" th:value="${sp.giaBan}">
+                                    <input type="number" name="soLuong" min="0" th:max="${sp.datTruocDuoc ? 10 : T(java.lang.Math).min(10, sp.soLuongTon)}"
+                                           th:value="${chon.get(sp.idSanPham) ?: 0}" th:aria-label="|Số lượng ${sp.tenSanPham}|" required></td>
+                            </tr>
+                        </tbody>
+                        <tbody th:if="${don != null}">
+                            <tr th:each="ct : ${don.chiTiets}">
+                                <td th:text="${ct.tenSanPham}"></td>
+                                <td th:text="|${#numbers.formatDecimal(ct.donGia, 0, 'POINT', 0, 'COMMA')} ₫|"></td>
+                                <td><input type="hidden" name="chiTietId" th:value="${ct.idChiTiet}">
+                                    <input type="number" name="soLuong" min="0" max="10" th:data-gia="${ct.donGia}"
+                                           th:value="${chon.get(ct.idChiTiet) ?: ct.soLuong}" th:aria-label="|Số lượng ${ct.tenSanPham}|" required></td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+                <th:block th:if="${don == null}"><div th:replace="~{ma-giam-gia :: nhap}"></div></th:block>
+                <p th:if="${don?.uuDai != null}" class="sum-row"><span th:text="|Mã giảm giá ${don.uuDai.ma}|"></span>
+                    <output id="giam-don" th:data-loai="${don.uuDai.loai}" th:data-muc="${don.uuDai.muc}" th:data-nguong="${don.uuDai.nguong}"></output></p>
+                <p class="sum-row total"><span>Tổng tiền</span><output id="tong-don" th:data-giam="${baoGia?.chietKhau}"
+                   th:text="${baoGia != null ? #numbers.formatDecimal(baoGia.phaiTra, 1, 'POINT', 0, 'COMMA') + ' ₫' : ''}"></output></p>
+            </section>
+            <div class="form-actions"><button type="submit" class="btn" th:text="${don == null ? 'Tạo đơn hàng' : 'Lưu thay đổi'}"></button></div>
+        </form>
+    </main>
+</div>
+<script>
+    const tong = document.getElementById('tong-don');
+    if (tong) {
+        const form = tong.closest('form');
+        const uuDai = document.getElementById('giam-don');
+        let giam = BigInt(tong.dataset.giam || 0);
+        function capNhatTong() {
+            let soTien = 0n;
+            for (const dong of form.querySelectorAll('input[name="soLuong"]')) {
+                const gia = dong.dataset.gia ?? dong.parentElement.querySelector('[name="giaXem"]').value;
+                soTien += BigInt(Math.max(0, Math.trunc(Number(dong.value) || 0))) * BigInt(gia);
+            }
+            if (uuDai) {
+                const muc = BigInt(uuDai.dataset.muc);
+                giam = soTien < BigInt(uuDai.dataset.nguong) ? 0n
+                    : uuDai.dataset.loai === 'PHAN_TRAM' ? (soTien * muc + 50n) / 100n
+                    : (muc < soTien ? muc : soTien);
+                uuDai.value = '−' + giam.toLocaleString('vi-VN') + ' ₫';
+            }
+            tong.value = (soTien - giam).toLocaleString('vi-VN') + ' ₫';
+        }
+        form.addEventListener('input', event => {
+            if (event.target.matches('[name="soLuong"], [name="ma"]') && form.elements.doiChieu?.value) {
+                form.elements.doiChieu.value = '';
+                form.querySelector('.giam-theo-ma')?.setAttribute('hidden', '');
+                giam = 0n;
+            }
+            capNhatTong();
+        });
+        capNhatTong();
+    }
+</script>
+</body>
+</html>

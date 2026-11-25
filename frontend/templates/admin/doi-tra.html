@@ -1,0 +1,13 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý đổi trả | PeanutGear</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body class="admin-body"><div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1 th:text="|Đổi trả đơn ${hs.don.maDon}|"></h1>
+            <a class="btn-sm" th:href="@{/admin/don-hang/{id}(id=${hs.don.idDonHang})}">Chi tiết đơn</a>
+            <a class="btn-sm" th:href="@{/admin/doi-tra}">Danh sách đổi trả</a></div>
+        <div th:replace="~{doi-tra :: noiDung}"></div>
+    </main>
+</div></body></html>

@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Báo cáo thống kê | PeanutGear</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('bao-cao')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1>Báo cáo thống kê</h1></div>
+        <nav class="inline-row" aria-label="Các báo cáo">
+            <a th:each="item : ${cacMuc}" th:class="${muc == item ? 'btn' : 'btn-sm'}"
+               th:href="@{/admin/bao-cao(loai=${item.ma},tu=${tu},den=${den})}" th:text="${item.ten}"></a>
+        </nav>
+        <section class="panel">
+            <h2 th:text="${muc.ten}"></h2>
+            <form th:unless="${congNo}" class="inline-row" method="get" th:action="@{/admin/bao-cao}">
+                <input type="hidden" name="loai" th:value="${muc.ma}">
+                <label>Từ ngày <input type="date" name="tu" th:value="${tu}" required></label>
+                <label>Đến ngày <input type="date" name="den" th:value="${den}" required></label>
+                <button type="submit" class="btn-sm">Xem báo cáo</button>
+            </form>
+            <p class="muted" th:text="${muc.moTa}"></p>
+            <a th:if="${congNo}" class="btn-sm" th:href="@{/admin/thanh-toan(loc='tat-ca')}">Đối chiếu sổ theo đơn</a>
+            <div th:replace="~{fragments :: flash}"></div>
+            <th:block th:if="${kq != null}">
+                <p th:if="${kq.thieuNgayGiao > 0}" class="muted" th:text="|Có ${kq.thieuNgayGiao} đơn hoàn thành trong hệ thống thiếu ngày giao. Doanh số giao của các đơn này chưa thể phân vào kỳ.|"></p>
+                <div class="table-wrap"><table class="table">
+                    <thead><tr><th scope="col" th:each="cot : ${muc.cot}" th:text="${cot}"></th></tr></thead>
+                    <tbody>
+                    <tr th:each="d : ${kq.dongs}" th:unless="${d.tong}">
+                        <td th:text="${d.nhan}"></td><td th:each="so : ${d.soLieu}" th:text="${so}"></td>
+                    </tr>
+                    <tr th:if="${kq.dongs.isEmpty()}"><td th:colspan="${muc.cot.size()}" th:text="${congNo ? 'Hiện không có đơn còn công nợ.' : 'Không có phát sinh trong kỳ đã chọn.'}"></td></tr>
+                    </tbody>
+                    <tfoot><tr th:each="d : ${kq.dongs}" th:if="${d.tong}">
+                        <th scope="row" th:text="${d.nhan}"></th><td th:each="so : ${d.soLieu}"><strong th:text="${so}"></strong></td>
+                    </tr></tfoot>
+                </table></div>
+            </th:block>
+        </section>
+    </main>
+</div>
+</body>
+</html>

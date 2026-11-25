@@ -1,0 +1,45 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Danh mục | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="admin-body">
+    <div class="admin-layout">
+        <aside th:replace="~{fragments :: adminSidebar('danh-muc')}"></aside>
+
+        <main class="admin-main">
+            <div class="admin-head">
+                <h1 th:text="${danhMuc.idDanhMuc == null} ? 'Thêm danh mục' : 'Sửa danh mục'">Danh mục</h1>
+                <a class="btn-sm" th:href="@{/admin/danh-muc}">← Quay lại</a>
+            </div>
+
+            <form class="form-card" th:action="@{/admin/danh-muc/save}" th:object="${danhMuc}" method="post">
+                <input type="hidden" th:field="*{idDanhMuc}">
+                <input type="hidden" th:field="*{hinhAnh}">
+
+                <div class="form-grid">
+                    <label class="span-2">Tên danh mục *
+                        <input type="text" th:field="*{tenDanhMuc}">
+                        <small class="err" th:if="${#fields.hasErrors('tenDanhMuc')}" th:errors="*{tenDanhMuc}"></small>
+                    </label>
+                    <label class="span-2">Mô tả
+                        <textarea rows="3" th:field="*{moTa}"></textarea>
+                    </label>
+                </div>
+
+                <div class="form-actions">
+                    <button type="submit" class="btn">Lưu danh mục</button>
+                    <a class="btn-sm" th:href="@{/admin/danh-muc}">Hủy</a>
+                </div>
+            </form>
+        </main>
+    </div>
+</body>
+
+</html>

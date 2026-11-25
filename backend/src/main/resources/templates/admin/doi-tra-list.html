@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý đổi trả | PeanutGear</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body class="admin-body"><div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1>Quản lý đổi trả</h1><a class="btn-sm" th:href="@{/admin/don-hang}">Đơn hàng</a></div>
+        <form class="inline-row" method="get" th:action="@{/admin/doi-tra}">
+            <label>Tra cứu <input type="search" name="q" th:value="${q}" placeholder="Mã đơn hoặc tên sản phẩm"></label>
+            <label>Trạng thái <select name="buoc"><option value="">Tất cả</option>
+                <option th:each="b : ${cacBuoc}" th:value="${b}" th:text="${b.nhan}" th:selected="${b == buoc}"></option>
+            </select></label><button class="btn-sm">Tra cứu</button>
+        </form>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Yêu cầu</th><th>Ngày nhận</th><th>Đơn hàng</th><th>Sản phẩm</th><th>Hình thức</th><th>Trạng thái</th></tr></thead>
+            <tbody><tr th:each="y : ${ketQua.content}">
+                <td><a th:href="@{/admin/don-hang/{id}/doi-tra(id=${y.chiTiet.donHang.idDonHang})} + '#yc-' + ${y.id}" th:text="|ĐT-${y.id}|"></a></td>
+                <td th:text="${#temporals.format(y.ngayTao, 'dd/MM/yyyy HH:mm')}"></td><td th:text="${y.chiTiet.donHang.maDon}"></td><td th:text="|${y.chiTiet.tenSanPham} × ${y.soLuong}|"></td>
+                <td th:text="${y.loai.nhan}"></td><td th:text="${y.buoc.nhan}"></td>
+            </tr><tr th:if="${ketQua.empty}"><td colspan="6">Chưa có yêu cầu phù hợp. Để tiếp nhận tại cửa hàng, mở một đơn đã hoàn thành.</td></tr></tbody></table></div>
+        <nav class="inline-row" th:if="${ketQua.totalPages > 1}">
+            <a th:if="${ketQua.hasPrevious()}" th:href="@{/admin/doi-tra(q=${q},buoc=${buoc},trang=${ketQua.number - 1})}">Trang trước</a>
+            <span th:text="|Trang ${ketQua.number + 1}/${ketQua.totalPages}|"></span>
+            <a th:if="${ketQua.hasNext()}" th:href="@{/admin/doi-tra(q=${q},buoc=${buoc},trang=${ketQua.number + 1})}">Trang sau</a>
+        </nav>
+    </main>
+</div></body></html>

@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Đơn hàng của tôi | PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+    <div th:replace="~{fragments :: shopHeader}"></div>
+    <main class="container page-main">
+        <h1>Đơn hàng của tôi</h1>
+        <div th:replace="~{fragments :: flash}"></div>
+        <form th:replace="~{fragments :: traCuuDon(@{/don-hang})}"></form>
+        <p class="empty-note" th:if="${#lists.isEmpty(donHangs)}"><span th:text="${#strings.isEmpty(q) and trangThaiChon == null ? 'Bạn chưa có đơn hàng nào.' : 'Không tìm thấy đơn phù hợp.'}"></span>
+            <a class="text-link" th:href="@{/}">Mua sắm ngay →</a></p>
+        <div class="table-wrap" th:if="${!#lists.isEmpty(donHangs)}">
+            <table class="table">
+                <thead><tr><th>Mã đơn</th><th>Ngày đặt</th><th>Loại</th><th>Tổng tiền</th><th>Thanh toán</th><th>Trạng thái</th><th></th></tr></thead>
+                <tbody>
+                    <tr th:each="dh : ${donHangs}">
+                        <td><strong th:text="${dh.maDon}">PG000001</strong></td>
+                        <td th:text="${#temporals.format(dh.ngayTao, 'dd/MM/yyyy HH:mm')}">date</td>
+                        <td><span class="tag tag-blue" th:if="${dh.datTruoc}">Đặt trước</span>
+                            <span class="tag" th:unless="${dh.datTruoc}">Thường</span></td>
+                        <td th:text="${#numbers.formatDecimal(dh.tongTien, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</td>
+                        <td><span class="tag tag-green" th:if="${dh.daThanhToan}" th:text="${dh.nhanThanhToan}"></span>
+                            <span class="tag tag-yellow" th:unless="${dh.daThanhToan}" th:text="${dh.nhanThanhToan}"></span></td>
+                        <td><span class="tag" th:classappend="${dh.trangThai.mau}" th:text="${dh.trangThai.nhan}">st</span></td>
+                        <td><a class="btn-sm" th:href="@{/don-hang/{id}(id=${dh.idDonHang})}">Xem</a></td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </main>
+    <div th:replace="~{fragments :: shopFooter}"></div>
+</body>
+</html>

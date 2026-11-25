@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Xử lý giao hàng | PeanutGear</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1 th:text="|Giao hàng · ${hs.don.maDon}|"></h1>
+            <a class="btn-sm" th:href="@{/admin/don-hang/{id}(id=${hs.don.idDonHang})}">Chi tiết đơn</a>
+            <a class="btn-sm" th:href="@{/admin/giao-hang}">Danh sách giao hàng</a></div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <section class="panel">
+            <h2 th:text="${hs.buoc?.nhan ?: hs.don.trangThai.nhan}"></h2>
+            <p th:text="|${hs.don.hoTenNhan} · ${hs.don.soDienThoai} · ${hs.don.diaChi}|"></p>
+            <p th:if="${hs.giao?.soYeuCau != null}">Yêu cầu xuất hàng <strong th:text="${hs.giao.soYeuCau}"></strong> ·
+                <span th:text="${#temporals.format(hs.giao.ngayYeuCau, 'dd/MM/yyyy HH:mm')}"></span></p>
+            <p th:if="${hs.giao?.donVi != null}" th:text="|Đơn vị giao: ${hs.giao.donVi} · Mã vận đơn: ${hs.giao.maVanDon}|"></p>
+            <a class="btn-sm" th:if="${hs.giao?.soPhieu != null}" th:href="@{/admin/don-hang/{id}/giao-hang/phieu(id=${hs.don.idDonHang})}"
+               th:text="|Xem và in phiếu ${hs.giao.soPhieu}|"></a>
+            <p class="muted" th:if="${hs.giao?.duLieuCu == true}">Hồ sơ chuyển từ trạng thái đơn cũ. Thông tin phiếu và thời điểm bàn giao ban đầu chưa được lưu.</p>
+            <div class="table-wrap"><table class="table"><thead><tr><th>Hàng cần giao</th><th>Số lượng</th></tr></thead>
+                <tbody><tr th:each="ct : ${hs.don.chiTiets}"><td th:text="${ct.tenSanPham}"></td><td th:text="${ct.soLuong}"></td></tr></tbody>
+            </table></div>
+        </section>
+        <form th:each="t : ${hs.tacVu}" class="form-card wide" method="post"
+              th:action="@{/admin/don-hang/{id}/giao-hang(id=${hs.don.idDonHang})}">
+            <input type="hidden" name="lan" th:value="${hs.lan}"><input type="hidden" name="thaoTac" th:value="${t}">
+            <div class="form-grid" th:if="${t.name() == 'LAP_PHIEU'}">
+                <label>Đơn vị vận chuyển hoặc người giao nội bộ <input name="donVi" required maxlength="100"></label>
+                <label>Mã vận đơn hoặc mã giao nội bộ <input name="vanDon" required maxlength="80"></label>
+            </div>
+            <label th:if="${t.nhanGhiChu != null}"><span th:text="${t.nhanGhiChu}"></span>
+                <input name="ghiChu" required maxlength="500" placeholder="Nội dung hiển thị trong hành trình của khách"></label>
+            <p class="muted" th:if="${t.name() == 'NHAN_HOAN'}">Xác nhận này sẽ nhập lại toàn bộ số lượng trên đơn và đóng đơn ở trạng thái đã hủy.</p>
+            <button class="btn-sm" th:text="${t.nhan}"></button>
+        </form>
+        <section class="panel" th:if="${!hs.nhatKy.isEmpty()}"><h2>Lịch sử giao hàng</h2>
+            <table class="table"><thead><tr><th>Thời gian</th><th>Thao tác</th><th>Nội dung</th><th>Người ghi</th></tr></thead>
+            <tbody><tr th:each="n : ${hs.nhatKy}"><td th:text="${#temporals.format(n.thoiDiem, 'dd/MM/yyyy HH:mm')}"></td>
+                <td th:text="${n.suKien}"></td><td th:text="${n.noiDung}"></td><td th:text="${n.nguoiGhi}"></td></tr></tbody></table>
+        </section>
+    </main>
+</div>
+</body>
+</html>

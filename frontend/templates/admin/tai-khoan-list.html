@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Khách hàng | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="admin-body">
+    <div class="admin-layout">
+        <aside th:replace="~{fragments :: adminSidebar('tai-khoan')}"></aside>
+
+        <main class="admin-main">
+            <div class="admin-head">
+                <h1>Khách hàng</h1>
+                <a class="btn" th:href="@{/admin/tai-khoan/new}">Thêm khách hàng</a>
+            </div>
+
+            <div th:replace="~{fragments :: flash}"></div>
+
+            <form class="inline-row" method="get" th:action="@{/admin/tai-khoan}">
+                <label>Tra cứu khách hàng
+                    <input type="search" name="q" th:value="${q}" placeholder="Tài khoản, họ tên, email, SĐT">
+                </label>
+                <label>Nhóm khách hàng
+                    <select name="nhom">
+                        <option value="">Tất cả</option>
+                        <option th:each="n : ${cacNhom}" th:value="${n}" th:text="${n.nhan}" th:selected="${n == nhomChon}"></option>
+                    </select>
+                </label>
+                <button type="submit" class="btn-sm">Tìm kiếm</button>
+                <a class="btn-sm" th:if="${!#strings.isEmpty(q) or nhomChon != null}" th:href="@{/admin/tai-khoan}">Xóa bộ lọc</a>
+            </form>
+
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr><th>ID</th><th>Tên đăng nhập</th><th>Họ tên</th><th>Email</th><th>Trạng thái</th><th></th></tr>
+                    </thead>
+                    <tbody>
+                        <tr th:if="${#lists.isEmpty(khachHangs)}"><td colspan="6">Không tìm thấy khách hàng.</td></tr>
+                        <tr th:each="tk : ${khachHangs}">
+                            <td th:text="${tk.idKhachHang}">1</td>
+                            <td><strong th:text="${tk.tenDangNhap}">user</strong></td>
+                            <td th:text="${tk.hoTen}">Họ tên</td>
+                            <td th:text="${tk.email}">email</td>
+                            <td>
+                                <span class="tag tag-green" th:if="${tk.kichHoat}">Hoạt động</span>
+                                <span class="tag tag-red" th:unless="${tk.kichHoat}">Đã khóa</span>
+                            </td>
+                            <td class="actions">
+                                <a class="btn-sm" th:href="@{/admin/tai-khoan/{id}(id=${tk.idKhachHang})}">Hồ sơ</a>
+                                <form th:action="@{/admin/tai-khoan/{id}/toggle(id=${tk.idKhachHang})}" method="post">
+                                    <button type="submit" class="btn-sm" th:text="${tk.kichHoat} ? 'Khóa' : 'Mở khóa'">Khóa</button>
+                                </form>
+                                <form th:action="@{/admin/tai-khoan/{id}/delete(id=${tk.idKhachHang})}" method="post"
+                                      onsubmit="return confirm('Xóa tài khoản này?');">
+                                    <button type="submit" class="btn-sm danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

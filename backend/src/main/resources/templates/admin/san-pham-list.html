@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Sản phẩm | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="admin-body">
+    <div class="admin-layout">
+        <aside th:replace="~{fragments :: adminSidebar('san-pham')}"></aside>
+
+        <main class="admin-main">
+            <div class="admin-head">
+                <h1>Sản phẩm</h1>
+                <a class="btn-sm" th:href="@{/admin/san-pham/bang-gia}">Bảng giá và tồn kho</a>
+                <a class="btn" th:href="@{/admin/san-pham/new}">+ Thêm sản phẩm</a>
+            </div>
+
+            <div th:replace="~{fragments :: flash}"></div>
+
+            <div class="table-wrap">
+                <table class="table">
+                    <thead>
+                        <tr>
+                            <th>Ảnh</th><th>Mã</th><th>Tên sản phẩm</th><th>Danh mục</th>
+                            <th>Giá</th><th>Tồn</th><th>Trạng thái</th><th></th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr th:each="sp : ${sanPhams}">
+                            <td>
+                                <img class="thumb" th:if="${sp.hinhAnh != null and !#strings.isEmpty(sp.hinhAnh)}"
+                                     th:src="@{'/images/' + ${sp.hinhAnh}}" alt="">
+                                <span class="thumb thumb-empty"
+                                      th:if="${sp.hinhAnh == null or #strings.isEmpty(sp.hinhAnh)}">—</span>
+                            </td>
+                            <td th:text="${sp.maSanPham}">SP-001</td>
+                            <td>
+                                <strong th:text="${sp.tenSanPham}">Tên</strong>
+                                <div class="muted" th:text="${sp.thuongHieu}">Brand</div>
+                                <span class="tag tag-blue" th:if="${sp.noiBat}">Nổi bật</span>
+                                <span class="tag tag-green" th:if="${sp.banChay}">Bán chạy</span>
+                            </td>
+                            <td th:text="${sp.danhMuc != null ? sp.danhMuc.tenDanhMuc : '—'}">Danh mục</td>
+                            <td th:text="${#numbers.formatDecimal(sp.giaBan, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</td>
+                            <td><span class="tag" th:classappend="${sp.soLuongTon <= 5} ? 'tag-red' : ''"
+                                      th:text="${sp.soLuongTon}">0</span></td>
+                            <td>
+                                <span class="tag tag-green" th:if="${sp.trangThai}">Đang bán</span>
+                                <span class="tag tag-gray" th:unless="${sp.trangThai}">Đang ẩn</span>
+                            </td>
+                            <td class="actions">
+                                <a class="btn-sm" th:href="@{/admin/san-pham/{id}/edit(id=${sp.idSanPham})}">Sửa</a>
+                                <form th:action="@{/admin/san-pham/{id}/delete(id=${sp.idSanPham})}" method="post"
+                                      onsubmit="return confirm('Xóa sản phẩm này?');">
+                                    <button type="submit" class="btn-sm danger">Xóa</button>
+                                </form>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="empty-note" th:if="${#lists.isEmpty(sanPhams)}">Chưa có sản phẩm nào.</p>
+            </div>
+        </main>
+    </div>
+</body>
+
+</html>

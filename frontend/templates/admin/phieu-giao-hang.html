@@ -1,0 +1,25 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${hs.giao.soPhieu}"></title><link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>@media print { .form-actions { display: none } .panel { box-shadow: none; border: 0 } tr { break-inside: avoid } }</style>
+</head>
+<body><main class="container page-main">
+    <article class="panel"><p>PeanutGear</p><h1>PHIẾU GIAO HÀNG</h1>
+        <p>Số phiếu <strong th:text="${hs.giao.soPhieu}"></strong> · Yêu cầu xuất <b th:text="${hs.giao.soYeuCau}"></b> · Đơn <b th:text="${hs.don.maDon}"></b></p>
+        <p>Ngày lập <span th:text="${#temporals.format(hs.giao.ngayLapPhieu, 'dd/MM/yyyy HH:mm')}"></span> · Người lập <span th:text="${hs.giao.nguoiLapPhieu}"></span></p>
+        <p>Người nhận <b th:text="${hs.don.hoTenNhan}"></b> · Điện thoại <span th:text="${hs.don.soDienThoai}"></span></p>
+        <p>Địa điểm giao <span th:text="${hs.don.diaChi}"></span></p>
+        <p th:text="|Đơn vị giao: ${hs.giao.donVi} · Mã vận đơn: ${hs.giao.maVanDon}|"></p>
+        <p>Tiến độ <strong th:text="${hs.buoc.nhan}"></strong></p>
+        <table class="table"><thead><tr><th>STT</th><th>Sản phẩm</th><th>Số lượng</th></tr></thead>
+            <tbody><tr th:each="ct, i : ${hs.don.chiTiets}"><td th:text="${i.count}"></td>
+                <td th:text="${ct.tenSanPham}"></td><td th:text="${ct.soLuong}"></td></tr></tbody></table>
+        <p>Tiền thu hộ khi lập phiếu <b th:text="|${#numbers.formatDecimal(hs.giao.thuHoKhiLap, 1, 'POINT', 0, 'COMMA')} ₫|"></b></p>
+        <p th:if="${hs.don.phuongThuc.name() == 'COD'}">Còn phải thu theo sổ thanh toán tại thời điểm in
+            <b th:text="|${#numbers.formatDecimal(hs.don.conNo, 1, 'POINT', 0, 'COMMA')} ₫|"></b></p>
+        <p class="sum-row"><span>Người giao (ký, ghi họ tên)</span><span>Người nhận (ký, ghi họ tên)</span></p>
+    </article>
+    <div class="form-actions"><button class="btn-sm" onclick="window.print()">In phiếu giao hàng</button>
+        <a class="btn-sm" th:href="@{/admin/don-hang/{id}/giao-hang(id=${hs.don.idDonHang})}">Quay lại giao hàng</a></div>
+</main></body></html>

@@ -1,0 +1,116 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org"
+      xmlns:sec="http://www.thymeleaf.org/extras/spring-security">
+<body>
+
+<header th:fragment="shopHeader" class="site-header">
+    <div class="container nav">
+        <a class="logo" th:href="@{/}">⚡PEANUT<span>GEAR</span></a>
+
+        <form class="search" th:action="@{/}" method="get">
+            <input type="text" name="q" placeholder="Tìm tai nghe, sạc, chuột, loa..." th:value="${q}">
+            <button type="submit">Tìm kiếm</button>
+        </form>
+
+        <nav class="nav-links">
+            <a sec:authorize="hasRole('ADMIN')" th:href="@{/admin}">Quản trị</a>
+            <a sec:authorize="!hasRole('ADMIN')" th:href="@{/gio-hang}" class="cart-link">🛒 Giỏ hàng
+                <span class="cart-count" th:if="${soLuongGio != null and soLuongGio > 0}" th:text="${soLuongGio}">0</span>
+            </a>
+            <a sec:authorize="hasRole('USER')" th:href="@{/don-hang}">Đơn hàng</a>
+            <span sec:authorize="isAuthenticated()" class="hello">
+                Xin chào, <b sec:authentication="name">user</b>
+            </span>
+            <form sec:authorize="isAuthenticated()" th:action="@{/logout}" method="post" class="inline-form">
+                <button type="submit" class="link-btn">Đăng xuất</button>
+            </form>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/login}">Đăng nhập</a>
+            <a sec:authorize="!isAuthenticated()" th:href="@{/register}" class="btn-small">Đăng ký</a>
+        </nav>
+    </div>
+</header>
+
+<footer th:fragment="shopFooter" class="site-footer">
+    <div class="container">
+        <p><strong>PEANUTGEAR</strong> — Phụ kiện công nghệ chính hãng, giao nhanh toàn quốc.</p>
+        <p class="muted">© 2026 PeanutGear. MSSV:24662023 · 20CSI01.</p>
+    </div>
+
+    <button id="backToTopBtn" title="Lên đầu trang">&#8593;</button>
+
+    <script>
+        const backToTopBtn = document.getElementById('backToTopBtn');
+
+        window.addEventListener('scroll', () => {
+            if (window.scrollY > 300) {
+                backToTopBtn.style.display = 'flex';
+            } else {
+                backToTopBtn.style.display = 'none';
+            }
+        });
+
+        backToTopBtn.addEventListener('click', () => {
+            window.scrollTo({
+                top: 0,
+                behavior: 'smooth'
+            });
+        });
+    </script>
+</footer>
+
+<a th:fragment="productCard(sp)" class="product-card" th:href="@{/san-pham/{id}(id=${sp.idSanPham})}">
+    <div class="product-image">
+        <img th:if="${sp.hinhAnh != null and !#strings.isEmpty(sp.hinhAnh)}"
+             th:src="@{'/images/' + ${sp.hinhAnh}}" th:alt="${sp.tenSanPham}">
+        <div class="img-placeholder" th:if="${sp.hinhAnh == null or #strings.isEmpty(sp.hinhAnh)}"
+             th:text="${sp.thuongHieu != null ? sp.thuongHieu : 'PEANUT'}">PEANUT</div>
+        <span class="badge badge-hot" th:if="${sp.banChay}">Bán chạy</span>
+        <span class="badge badge-out" th:if="${sp.soLuongTon == 0 and !sp.datTruocDuoc}">Hết hàng</span>
+        <span class="badge badge-pre" th:if="${sp.datTruocDuoc}">Đặt trước</span>
+    </div>
+    <div class="product-info">
+        <p class="brand" th:text="${sp.thuongHieu}">Thương hiệu</p>
+        <h3 th:text="${sp.tenSanPham}">Tên sản phẩm</h3>
+        <p class="category" th:text="${sp.danhMuc != null ? sp.danhMuc.tenDanhMuc : ''}">Danh mục</p>
+        <p class="price" th:text="${#numbers.formatDecimal(sp.giaBan, 0, 'POINT', 0, 'COMMA')} + ' ₫'">0 ₫</p>
+        <span class="tag tag-green" th:if="${sp.khuyenMaiHienTai != null}" th:text="|Giảm ${sp.khuyenMaiHienTai.phanTram}%|"></span>
+    </div>
+</a>
+
+<aside th:fragment="adminSidebar(active)" class="admin-sidebar">
+    <div class="admin-brand">⚡PEANUT<span>GEAR</span><small>Quản trị</small></div>
+    <nav>
+        <a th:href="@{/admin}" th:classappend="${active == 'dashboard'} ? 'active'">📊 Tổng quan</a>
+        <a th:href="@{/admin/bao-cao}" th:classappend="${active == 'bao-cao'} ? 'active'">📈 Báo cáo thống kê</a>
+        <a th:href="@{/admin/san-pham}" th:classappend="${active == 'san-pham'} ? 'active'">🎧 Sản phẩm</a>
+        <a th:href="@{/admin/don-hang}" th:classappend="${active == 'don-hang'} ? 'active'">🧾 Đơn hàng</a>
+        <a th:href="@{/admin/danh-muc}" th:classappend="${active == 'danh-muc'} ? 'active'">🗂️ Danh mục</a>
+        <a th:href="@{/admin/tai-khoan}" th:classappend="${active == 'tai-khoan'} ? 'active'">👥 Khách hàng</a>
+    </nav>
+    <div class="admin-bottom">
+        <a th:href="@{/}">← Xem cửa hàng</a>
+        <form th:action="@{/logout}" method="post">
+            <button type="submit" class="link-btn light">Đăng xuất</button>
+        </form>
+    </div>
+</aside>
+
+<div th:fragment="flash">
+    <div class="alert alert-ok" th:if="${thongBao}" th:text="${thongBao}"></div>
+    <div class="alert alert-err" th:if="${loi}" th:text="${loi}"></div>
+</div>
+
+<form th:fragment="traCuuDon(duongDan)" class="inline-row" method="get" th:action="${duongDan}">
+    <label>Mã đơn <input type="search" name="q" th:value="${q}" placeholder="Nhập mã đơn"></label>
+    <label>Trạng thái
+        <select name="trangThai">
+            <option value="">Tất cả</option>
+            <option th:each="t : ${cacTrangThai}" th:value="${t}" th:text="${t.nhan}" th:selected="${t == trangThaiChon}"></option>
+        </select>
+    </label>
+    <button class="btn-sm" type="submit">Tra cứu</button>
+    <a th:if="${!#strings.isEmpty(q) or trangThaiChon != null}" th:href="${duongDan}">Xóa bộ lọc</a>
+</form>
+
+</body>
+</html>

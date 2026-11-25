@@ -1,0 +1,58 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Hồ sơ khách hàng | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('tai-khoan')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head">
+            <h1 th:text="${khach == null ? 'Thêm khách hàng' : 'Sửa hồ sơ khách hàng'}"></h1>
+            <a class="btn-sm" th:href="@{/admin/tai-khoan}">Danh sách khách hàng</a>
+        </div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <form class="form-card" method="post" th:object="${hoSo}"
+              th:action="${khach == null} ? @{/admin/tai-khoan/new} : @{/admin/tai-khoan/{id}/edit(id=${khach.idKhachHang})}">
+            <div class="alert alert-err" role="alert" th:if="${#fields.hasAnyErrors()}">
+                <div th:each="loi : ${#fields.allErrors()}" th:text="${loi}"></div>
+            </div>
+            <div class="form-grid">
+                <label th:if="${khach == null}">Tên đăng nhập
+                    <input type="text" name="tenDangNhap" th:value="${tenDangNhap}" minlength="3" maxlength="50" required>
+                </label>
+                <label th:if="${khach == null}">Mật khẩu ban đầu
+                    <input type="password" name="matKhau" autocomplete="new-password" minlength="6" required>
+                </label>
+                <p th:if="${khach != null}" class="span-2">Tài khoản <strong th:text="${khach.tenDangNhap}"></strong></p>
+                <label>Họ tên
+                    <input type="text" th:field="*{hoTen}" maxlength="255">
+                </label>
+                <label>Nhóm khách hàng
+                    <select th:field="*{nhomKhachHang}" required>
+                        <option th:each="n : ${cacNhom}" th:value="${n}" th:text="${n.nhan}"></option>
+                    </select>
+                </label>
+                <label>Email
+                    <input type="email" th:field="*{email}" maxlength="255">
+                </label>
+                <label>Số điện thoại
+                    <input type="tel" th:field="*{soDienThoai}" maxlength="20">
+                </label>
+                <label class="span-2">Địa chỉ liên hệ
+                    <textarea th:field="*{diaChi}" rows="3" maxlength="500"></textarea>
+                </label>
+            </div>
+            <div class="form-actions">
+                <button type="submit" class="btn">Lưu hồ sơ</button>
+                <a class="btn-sm" th:href="${khach == null} ? @{/admin/tai-khoan} : @{/admin/tai-khoan/{id}(id=${khach.idKhachHang})}">Hủy</a>
+            </div>
+        </form>
+    </main>
+</div>
+</body>
+</html>

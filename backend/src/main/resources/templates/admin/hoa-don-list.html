@@ -1,0 +1,29 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý hóa đơn | PeanutGear</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body class="admin-body"><div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1>Quản lý hóa đơn</h1><a class="btn-sm" th:href="@{/admin/don-hang}">Đơn hàng</a></div>
+        <form class="inline-row" method="get" th:action="@{/admin/hoa-don}">
+            <label>Tra cứu <input type="search" name="q" th:value="${q}" placeholder="Số hóa đơn, mã đơn, tên hoặc MST người mua"></label>
+            <label>Trạng thái <select name="loc">
+                <option value="tat-ca">Tất cả</option><option value="nhap" th:selected="${loc == 'nhap'}">Bản nháp</option>
+                <option value="phat-hanh" th:selected="${loc == 'phat-hanh'}">Đã phát hành mô phỏng</option>
+                <option value="thay-the" th:selected="${loc == 'thay-the'}">Đã thay thế</option>
+            </select></label><button class="btn-sm">Tra cứu</button>
+        </form>
+        <div class="table-wrap"><table class="table"><thead><tr><th>Số hóa đơn</th><th>Đơn hàng</th><th>Người mua</th><th>Loại</th><th>Trạng thái</th><th>Ngày lập</th></tr></thead>
+        <tbody><tr th:each="hd : ${ketQua.content}">
+            <td><a th:href="@{/admin/don-hang/{id}/hoa-don/{ban}(id=${hd.donId},ban=${hd.id})}" th:text="${hd.soHoaDon ?: 'Mở bản nháp'}"></a></td>
+            <td><a th:href="@{/admin/don-hang/{id}/hoa-don(id=${hd.donId})}" th:text="${hd.maDon}"></a></td>
+            <td th:text="${hd.nguoiMua}"></td><td th:text="${hd.loai.nhan}"></td><td th:text="${hd.trangThai}"></td><td th:text="${#temporals.format(hd.ngayLap, 'dd/MM/yyyy HH:mm')}"></td>
+        </tr><tr th:if="${ketQua.empty}"><td colspan="6">Chưa có hóa đơn phù hợp. Để lập hóa đơn, mở một đơn đã hoàn thành.</td></tr></tbody></table></div>
+        <nav class="inline-row" th:if="${ketQua.totalPages > 1}">
+            <a th:if="${ketQua.hasPrevious()}" th:href="@{/admin/hoa-don(q=${q},loc=${loc},trang=${ketQua.number - 1})}">Trang trước</a>
+            <span th:text="|Trang ${ketQua.number + 1}/${ketQua.totalPages}|"></span>
+            <a th:if="${ketQua.hasNext()}" th:href="@{/admin/hoa-don(q=${q},loc=${loc},trang=${ketQua.number + 1})}">Trang sau</a>
+        </nav>
+    </main>
+</div></body></html>

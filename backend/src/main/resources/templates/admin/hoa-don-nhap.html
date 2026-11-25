@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Bản nháp hóa đơn | PeanutGear</title><link rel="stylesheet" th:href="@{/css/style.css}"></head>
+<body class="admin-body"><div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1 th:text="|Bản nháp hóa đơn · ${hd.loai.nhan}|"></h1>
+            <a class="btn-sm" th:href="@{/admin/don-hang/{id}/hoa-don(id=${hd.donId})}">Hồ sơ hóa đơn</a></div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <form class="form-card wide" th:action="@{/admin/don-hang/{id}/hoa-don/{ban}(id=${hd.donId},ban=${hd.id})}" method="post" th:with="goc=${hd.loai.name() == 'BAN_HANG'}">
+            <input type="hidden" name="lan" th:value="${hd.lanSua}">
+            <p>Đồ án PeanutGear · Chứng từ mô phỏng · Đơn <b th:text="${hd.maDon}"></b></p>
+            <p th:if="${!goc}" th:text="|Hóa đơn tham chiếu ${hd.soThamChieu}|"></p>
+            <div class="form-grid">
+                <label>Người mua <input name="nguoiMua" required maxlength="255" th:value="${hd.nguoiMua}"></label>
+                <label>Mã số thuế người mua (nếu có) <input name="mst" maxlength="30" th:value="${hd.mst}"></label>
+                <label class="span-2">Địa chỉ <input name="diaChi" required maxlength="500" th:value="${hd.diaChi}"></label>
+                <label class="span-2" th:if="${!goc}">Lý do điều chỉnh hoặc thay thế <textarea required maxlength="500" name="lyDo" th:text="${hd.lyDo}"></textarea></label>
+            </div><h2 th:text="${goc ? 'Hàng hóa theo đơn' : 'Nội dung đúng sau khi sửa'}"></h2>
+            <p th:if="${!goc}" class="muted">Nhập số lượng đúng cho từng dòng. Nhập 0 để bỏ dòng hàng.</p>
+            <div class="table-wrap"><table class="table">
+                <thead><tr><th>Sản phẩm</th><th>Số lượng</th><th>Đơn giá (₫)</th></tr></thead>
+                <tbody id="dong-hang"><tr th:each="d : ${hd.dongs}">
+                    <td><span th:if="${goc}" th:text="${d.ten}"></span><input th:unless="${goc}" name="ten" maxlength="255" required th:value="${d.ten}"></td>
+                    <td><span th:if="${goc}" th:text="${d.soLuong}"></span><input th:unless="${goc}" name="sl" type="number" min="0" required th:value="${d.soLuong}"></td>
+                    <td><span th:if="${goc}" th:text="|${#numbers.formatDecimal(d.donGia, 1, 'POINT', 0, 'COMMA')} ₫|"></span><input th:unless="${goc}" name="gia" type="number" min="0" required th:value="${d.donGia}"></td>
+                </tr></tbody></table></div>
+            <th:block th:unless="${goc}">
+                <template id="dong-moi"><tr><td><input name="ten" aria-label="Tên sản phẩm mới" maxlength="255" required></td>
+                    <td><input name="sl" aria-label="Số lượng mới" type="number" value="1" min="0" required></td>
+                    <td><input name="gia" aria-label="Đơn giá mới" type="number" min="0" required></td></tr></template>
+                <button type="button" class="btn-sm" onclick="document.getElementById('dong-hang').append(document.getElementById('dong-moi').content.cloneNode(true))">Thêm dòng hàng</button>
+            </th:block>
+            <p th:if="${goc}">Tổng giảm trừ <b th:text="|${#numbers.formatDecimal(hd.giam, 1, 'POINT', 0, 'COMMA')} ₫|"></b> · Giá trị đơn <b th:text="|${#numbers.formatDecimal(hd.tong, 1, 'POINT', 0, 'COMMA')} ₫|"></b></p>
+            <label th:unless="${goc}">Tổng giảm trừ sau khi sửa (₫) <input name="giam" type="number" min="0" required th:value="${hd.giam}"></label>
+            <button class="btn" type="submit">Lưu và xem trước</button>
+        </form>
+        <form th:action="@{/admin/don-hang/{id}/hoa-don/{ban}/bo-nhap(id=${hd.donId},ban=${hd.id})}" method="post" onsubmit="return confirm('Bỏ bản nháp này?')">
+            <input type="hidden" name="lan" th:value="${hd.lanSua}"><button class="btn-sm" type="submit">Bỏ bản nháp</button></form>
+    </main>
+</div></body></html>

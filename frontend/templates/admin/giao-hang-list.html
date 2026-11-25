@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Quản lý giao hàng | PeanutGear</title>
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('don-hang')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1>Quản lý giao hàng</h1><a class="btn-sm" th:href="@{/admin/don-hang}">Đơn hàng</a></div>
+        <form class="inline-row" method="get" th:action="@{/admin/giao-hang}">
+            <label>Tra cứu <input type="search" name="q" th:value="${q}" placeholder="Mã đơn, mã vận đơn, người nhận"></label>
+            <label>Tiến độ <select name="buoc"><option value="">Tất cả</option>
+                <option th:each="b : ${cacBuoc}" th:value="${b}" th:text="${b.nhan}" th:selected="${buoc == b}"></option>
+            </select></label><button class="btn-sm">Tra cứu</button>
+        </form>
+        <div class="table-wrap"><table class="table">
+            <thead><tr><th>Đơn hàng</th><th>Người nhận</th><th>Tiến độ</th><th>Đơn vị giao</th><th>Mã vận đơn</th><th></th></tr></thead>
+            <tbody><tr th:each="d : ${ketQua.content}">
+                <td th:text="${d.maDon}"></td><td th:text="${d.nguoiNhan}"></td><td th:text="${d.nhan}"></td>
+                <td th:text="${d.donVi ?: '—'}"></td><td th:text="${d.vanDon ?: '—'}"></td>
+                <td><a class="btn-sm" th:href="@{/admin/don-hang/{id}/giao-hang(id=${d.donId})}">Xử lý giao hàng</a></td>
+            </tr><tr th:if="${ketQua.empty}"><td colspan="6">Không có đơn phù hợp.</td></tr></tbody>
+        </table></div>
+        <nav class="inline-row" th:if="${ketQua.totalPages > 1}">
+            <a th:if="${ketQua.hasPrevious()}" th:href="@{/admin/giao-hang(q=${q},buoc=${buoc},trang=${ketQua.number - 1})}">Trang trước</a>
+            <span th:text="|Trang ${ketQua.number + 1}/${ketQua.totalPages}|"></span>
+            <a th:if="${ketQua.hasNext()}" th:href="@{/admin/giao-hang(q=${q},buoc=${buoc},trang=${ketQua.number + 1})}">Trang sau</a>
+        </nav>
+    </main>
+</div>
+</body>
+</html>

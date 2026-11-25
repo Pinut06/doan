@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Tổng quan | Quản trị PeanutGear</title>
+    <link rel="icon" type="image/png" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+
+<body class="admin-body">
+    <div class="admin-layout">
+        <aside th:replace="~{fragments :: adminSidebar('dashboard')}"></aside>
+
+        <main class="admin-main">
+            <h1>Tổng quan</h1>
+
+            <div class="stat-grid">
+                <a class="stat-card" th:href="@{/admin/san-pham}">
+                    <span>Sản phẩm</span><strong th:text="${tongSanPham}">0</strong>
+                </a>
+                <a class="stat-card" th:href="@{/admin/don-hang}">
+                    <span>Đơn hàng (cần xử lý)</span><strong><span th:text="${tongDonHang}">0</span>
+                        <small class="muted">(<span th:text="${donChoXuLy}">0</span>)</small></strong>
+                </a>
+                <a class="stat-card" th:href="@{/admin/danh-muc}">
+                    <span>Danh mục</span><strong th:text="${tongDanhMuc}">0</strong>
+                </a>
+                <a class="stat-card" th:href="@{/admin/tai-khoan}">
+                    <span>Khách hàng</span><strong th:text="${tongKhachHang}">0</strong>
+                </a>
+            </div>
+
+            <section class="panel">
+                <h2>Sản phẩm sắp hết hàng (tồn ≤ 5)</h2>
+                <table class="table" th:if="${!#lists.isEmpty(sapHetHang)}">
+                    <thead><tr><th>Mã</th><th>Tên sản phẩm</th><th>Tồn kho</th><th></th></tr></thead>
+                    <tbody>
+                        <tr th:each="sp : ${sapHetHang}">
+                            <td th:text="${sp.maSanPham}">SP</td>
+                            <td th:text="${sp.tenSanPham}">Tên</td>
+                            <td><span class="tag" th:classappend="${sp.soLuongTon == 0} ? 'tag-red' : 'tag-yellow'"
+                                      th:text="${sp.soLuongTon}">0</span></td>
+                            <td><a class="btn-sm" th:href="@{/admin/san-pham/{id}/edit(id=${sp.idSanPham})}">Cập nhật</a></td>
+                        </tr>
+                    </tbody>
+                </table>
+                <p class="empty-note" th:if="${#lists.isEmpty(sapHetHang)}">Tất cả sản phẩm đều còn đủ hàng.</p>
+            </section>
+        </main>
+    </div>
+</body>
+
+</html>

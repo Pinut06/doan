@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>Mã giảm giá | Quản trị PeanutGear</title>
+    <link rel="icon" th:href="@{/images/drx.png}">
+    <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body class="admin-body">
+<div class="admin-layout">
+    <aside th:replace="~{fragments :: adminSidebar('san-pham')}"></aside>
+    <main class="admin-main">
+        <div class="admin-head"><h1>Quản lý mã giảm giá</h1>
+            <a class="btn-sm" th:href="@{/admin/san-pham/bang-gia}">Bảng giá và tồn kho</a>
+        </div>
+        <div th:replace="~{fragments :: flash}"></div>
+        <form class="form-card wide" method="post" th:action="@{/admin/khuyen-mai}" th:object="${phieu}">
+            <h2 th:text="*{id == null ? 'Tạo chương trình' : 'Cập nhật chương trình'}"></h2>
+            <input type="hidden" th:field="*{id}"><input type="hidden" th:field="*{phienBan}">
+            <div class="form-grid">
+                <label>Tên chương trình <input th:field="*{ten}" required maxlength="120"></label>
+                <label>Mã giảm giá <input th:field="*{ma}" required maxlength="32" pattern="[a-zA-Z0-9_\-]{1,32}"
+                       title="Dùng chữ cái không dấu, số, dấu gạch ngang hoặc gạch dưới." th:readonly="*{id != null}"></label>
+                <label>Hình thức giảm <select th:field="*{loai}">
+                    <option value="PHAN_TRAM">Phần trăm (%)</option><option value="SO_TIEN">Số tiền (₫)</option>
+                </select></label>
+                <label>Mức giảm <input type="number" th:field="*{muc}" required min="1" step="1"></label>
+                <label>Giá trị đơn tối thiểu (₫) <input type="number" th:field="*{nguong}" required min="0" step="1"></label>
+                <label class="check"><input type="checkbox" name="kichHoat" value="true" th:checked="*{kichHoat}"> Cho phép sử dụng mã</label>
+                <label>Từ ngày <input type="date" th:field="*{tuNgay}" required></label>
+                <label>Đến hết ngày <input type="date" th:field="*{denNgay}" required></label>
+            </div>
+            <p class="muted">Mỗi lượt mua dùng một mã. Giá trị tối thiểu tính theo giá bán của từng đơn sau khi tách hàng đặt trước. Khoản giảm cố định chia theo giá trị các đơn đủ điều kiện.</p>
+            <div class="form-actions"><button class="btn" type="submit">Lưu chương trình</button>
+                <a class="btn-sm" th:if="*{id != null}" th:href="@{/admin/khuyen-mai}">Tạo chương trình khác</a>
+            </div>
+        </form>
+        <div class="table-wrap">
+            <table class="table">
+                <thead><tr><th>Chương trình</th><th>Mã</th><th>Mức giảm</th><th>Đơn tối thiểu</th><th>Thời gian áp dụng</th><th>Trạng thái</th><th></th></tr></thead>
+                <tbody><tr th:each="m : ${cacMa}">
+                    <td th:text="${m.ten}"></td><td th:text="${m.ma}"></td>
+                    <td th:text="${#numbers.formatDecimal(m.muc, 1, 'POINT', 0, 'COMMA') + (m.loai.name() == 'SO_TIEN' ? ' ₫' : '%')}"></td>
+                    <td th:text="|${#numbers.formatDecimal(m.nguong, 1, 'POINT', 0, 'COMMA')} ₫|"></td>
+                    <td th:text="|${m.tuNgay} – ${m.denNgay}|"></td><td th:text="${m.kichHoat ? 'Đã bật' : 'Tạm dừng'}"></td>
+                    <td><a class="btn-sm" th:href="@{/admin/khuyen-mai(sua=${m.id})}">Chỉnh sửa</a></td>
+                </tr><tr th:if="${#lists.isEmpty(cacMa)}"><td colspan="7">Chưa có mã giảm giá.</td></tr></tbody>
+            </table>
+        </div>
+    </main>
+</div>
+</body>
+</html>

@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="vi" xmlns:th="http://www.thymeleaf.org">
+<head><meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1">
+    <title th:text="${p.soPhieu}"></title><link rel="stylesheet" th:href="@{/css/style.css}">
+    <style>@media print { .form-actions { display: none } .panel { box-shadow: none; border: 0 } }</style>
+</head>
+<body><main class="container page-main">
+    <article class="panel">
+        <p>PeanutGear</p><h1 th:text="${p.loai.name() == 'THU' ? 'PHIẾU THU' : 'PHIẾU HOÀN TIỀN'}"></h1>
+        <p>Số phiếu <strong th:text="${p.soPhieu}"></strong> · Ngày lập <span th:text="${#temporals.format(p.ngayLap, 'dd/MM/yyyy HH:mm')}"></span></p>
+        <p>Đơn hàng <strong th:text="${p.don.maDon}"></strong></p>
+        <p><b th:text="${p.loai.name() == 'THU' ? 'Người nộp tiền' : 'Người nhận tiền'}"></b> · <span th:text="${p.nguoiNopNhan}"></span></p>
+        <p>Hình thức · <span th:text="${p.hinhThuc.nhan}"></span></p>
+        <p th:if="${p.doiSoat != null}">Mã ngân hàng · <span th:text="${#strings.substringAfter(p.doiSoat, ':')}"></span></p>
+        <p>Nội dung · <span th:text="${#strings.isEmpty(p.noiDung) ? 'Thu tiền đơn hàng' : p.noiDung}"></span></p>
+        <p class="sum-row total"><span>Số tiền</span><strong th:text="|${#numbers.formatDecimal(p.soTien, 1, 'POINT', 0, 'COMMA')} ₫|"></strong></p>
+        <p>Người lập phiếu · <span th:text="${p.nguoiLap}"></span></p>
+        <div class="sum-row"><span th:text="${p.loai.name() == 'THU' ? 'Người nộp tiền (ký, ghi họ tên)' : 'Người nhận tiền (ký, ghi họ tên)'}"></span>
+            <span>Người lập phiếu (ký, ghi họ tên)</span></div>
+    </article>
+    <div class="form-actions"><button class="btn-sm" onclick="window.print()">In phiếu</button>
+        <a class="btn-sm" th:href="@{/admin/don-hang/{id}/thanh-toan(id=${p.don.idDonHang})}">Sổ thanh toán</a></div>
+</main></body></html>
